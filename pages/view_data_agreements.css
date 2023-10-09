@@ -1,0 +1,70 @@
+  /* General Styling */
+  body {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+  }
+  
+  h1 {
+    text-align: center;
+    font-size: 14px;
+  }
+
+
+  /* Add styles for scrollable table */
+  .scrollable-table {
+    height: 450px; /* Adjust height as needed */
+    overflow-y: auto;
+    display: block;
+  }
+
+  /* Table Styling */
+  table {
+    border: 1px solid #4CAF50;
+    border-collapse: collapse;
+    margin: 15px 0;
+    padding: 0;
+    width: 80%;
+    table-layout: fixed;
+  }
+  /* the first colum contains the data row ID. This information means nothing to the user, so do not display it*/
+  #dataTable th:first-child,
+  #dataTable td:first-child {
+    display: none;
+  }
+
+ 
+
+
+
+.fixed-header {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 1;
+}
+
+  table tr {
+    background: #f2f4f3;
+    border: 1px solid #c1e0c9;
+    padding: .35em;
+  }
+
+  table th,
+  table td {
+    padding: .625em;
+    text-align: center;
+  }
+
+  table th {
+    font-size: .5em;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    background-color: #4CAF50;
+    color: white;
+  }
+
+  table td {
+    font-size: .35em;
+    color: #388E3C;
+    word-break: break-all;
+  }

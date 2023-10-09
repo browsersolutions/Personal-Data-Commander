@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="do_not_capture_list.css">
+    <link rel="stylesheet" href="common.css">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>do-not-capture</title>
+   
+</head>
+
+<body>
+<!-- start of page header -->
+
+  <table class="table-no-border">
+    <tbody>
+      <tr>
+        <td class="td-green-courier"><a href="view_click_stream.html" class="link-inherit-color">View Click Stream</a></td>
+        <td><a href="do_not_capture_list.html">Do-not-capture list</a></td>
+  
+        <td class="td-green-courier"><a href="view_data_agreements.html" class="link-inherit-color">View Data Agreements</a></td>
+
+      </tr>
+    </tbody>
+ 
+</table>
+
+<!-- end of pager header -->
+
+    <div>
+        A list of senstitive web domains/sites and URLs that should not be caputured.
+
+    </div>
+  
+<!-- Empty table structure -->
+<p/>
+Domains
+<div class="scrollable-table">
+<table id="exludeFromCaptureDomainTable">
+  <thead>
+    <tr class="fixed-header">
+        <th>ID</th>
+      <th class="sortableCol" >domains</th>
+     
+     
+      <th>action</th>
+
+    </tr>
+    <!-- Add a filter row -->
+    <tr class="fixed-header">
+      <th class="filterableCol"></th> <!-- Empty cell -->
+      <th class="filterableCol">filter:<input type="text" id="filterContent" placeholder="Filter Content" "></th>
+     
+      <th class="filterableCol"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Rows will be added here -->
+  </tbody>
+</table>
+<hr/>
+<p/>
+Domains
+<div class="scrollable-table">
+<table id="exludeFromCaptureURLTable">
+  <thead>
+    <tr class="fixed-header">
+        <th>ID</th>
+      <th class="sortableCol" >urls</th>
+     
+    
+      <th>action</th>
+
+    </tr>
+    <!-- Add a filter row -->
+    <tr class="fixed-header">
+      <th class="filterableCol"></th> <!-- Empty cell -->
+      <th class="filterableCol">filter:<input type="text" id="filterContent" placeholder="Filter Content" "></th>
+      
+      <th class="filterableCol"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Rows will be added here -->
+  </tbody>
+</table>
+<hr/>
+</div>
+    <script src="./do_not_capture_list_script.js"></script>
+</body>
+
+</html>

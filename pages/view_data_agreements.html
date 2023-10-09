@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="view_data_agreements.css">
+    <link rel="stylesheet" href="common.css">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>data agreements</title>
+   
+</head>
+
+<body>
+<!-- start of page header -->
+
+  <table class="table-no-border">
+    <tbody>
+      <tr>
+        <td class="td-green-courier"><a href="view_click_stream.html" class="link-inherit-color">View Click Stream</a></td>
+        <td><a href="do_not_capture_list.html">Do-not-capture list</a></td>
+  
+        <td class="td-green-courier"><a href="view_data_agreements.html" class="link-inherit-color">View Data Agreements</a></td>
+      </tr>
+    </tbody>
+ 
+</table>
+
+<!-- end of pager header -->
+
+    <div>
+        This is an overview of your data agreements
+    </div>
+  
+<!-- Empty table structure -->
+<div class="scrollable-table">
+<table id="dataTable">
+  <thead>
+    <tr class="fixed-header">
+        <th>ID</th>
+      <th class="sortableCol" >universaltime</th>
+      <th class="sortableCol" >localtime</th>
+      <th class="sortableCol" >counter party name</th>
+      <th>agreement</th>
+      <th>action</th>
+
+    </tr>
+    <!-- Add a filter row -->
+    <tr class="fixed-header">
+      <th class="filterableCol"></th> <!-- Empty cell -->
+      <th class="filterableCol">filter:<input type="text" id="filterContent" placeholder="Filter Content" "></th>
+      <th class="filterableCol"><input type="text" id="filterContent" placeholder="Filter Content" "></th>
+      <th class="filterableCol"><input type="text" id="filterContent" placeholder="Filter Content" "></th>
+      <th class="filterableCol"></th>
+      <th class="filterableCol"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Rows will be added here -->
+  </tbody>
+</table>
+<hr/>
+</div>
+    <script src="./view_data_agreements_script.js"></script>
+</body>
+
+</html>
