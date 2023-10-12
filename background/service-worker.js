@@ -4,8 +4,10 @@ const server_url = "http://localhost:3000";
 const URI_plugin_user_post_click = "/plugin_user_post_click";
 const URI_plugin_user_delete_click = "/plugin_user_delete_click";
 
-const plugin_uuid_header_name = "installationUniqueId";
 
+importScripts('ajv.min.js');
+
+const plugin_uuid_header_name = "installationUniqueId";
 
 /** Check if a unique ID has been set for this extenstion. It not, set one.
  * This ID is used to identify the user with the server without the user having to provide any information.
@@ -16,7 +18,7 @@ const plugin_uuid_header_name = "installationUniqueId";
 chrome.storage.local.get(['installationUniqueId'], function (result) {
     if (!result.installationUniqueId) {
         // Generate uniqueId here (either fetch from server or generate locally)
-                // generate a new unique identifier
+        // generate a new unique identifier
         let guid = () => {
             let s4 = () => {
                 return Math.floor((1 + Math.random()) * 0x10000)
@@ -25,7 +27,7 @@ chrome.storage.local.get(['installationUniqueId'], function (result) {
             }
             return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
         }
- 
+
         const installationUniqueId = guid();
         console.debug("now setting installationUniqueId (" + installationUniqueId + ")");
         chrome.storage.local.set({
@@ -35,7 +37,6 @@ chrome.storage.local.get(['installationUniqueId'], function (result) {
         console.debug("installationUniqueId already set (" + result.installationUniqueId + ")");
     }
 });
-
 
 var callback = function (details) {
     console.log('Les Headers ont ete recus');
@@ -81,7 +82,6 @@ var callback = function (details) {
         }
     }
 }
-
 
 //chrome.webRequest.onCompleted.addListener(
 //  callback3, {
@@ -160,7 +160,7 @@ function sendTokenMessageToTabs(tabs, entityid) {
     };
     console.log(message);
     for (const tab of tabs) {
-        browser.tabs
+        chrome.tabs
         .sendMessage(tab.id, {
             greeting: "Hi from background script"
         })
@@ -180,133 +180,209 @@ function getHeaderNames(responseHeaders) {
     return responseHeaders.map(header => header.name);
 }
 
-
 // pick up on platform headers
 chrome.webRequest.onHeadersReceived.addListener(function (details) {
-    console.log('################################');
-    console.log('############## onHeadersReceived');
-    console.log('################################');
+    // console.log('################################');
+    // console.log('############## onHeadersReceived');
+    // console.log('################################');
     // examine the http header for the X_HTTP_CYBOTIX_PLATFORM_TOKEN and if present, verify validity.
     // is so, check for other Cybotix headers and take action accordingly
-    console.log(JSON.stringify(details));
     console.log(details.type);
-    const h = details.responseHeaders;
-    const headerNames = getHeaderNames(details.responseHeaders);
-    console.log('HTTP header names:', headerNames);
-    // check for presence of cybotix headers and take appropriate action
+    if (details.type == "main_frame" || details.type == "sub_frame") {
+        console.log(JSON.stringify(details));
+
+        const h = details.responseHeaders;
+        const headerNames = getHeaderNames(details.responseHeaders);
+        console.log('HTTP header names:', headerNames);
+        // check for presence of cybotix headers and take appropriate action based on what additional headers are present
 
 
-    if (headerNames.includes("X_HTTP_CYBOTIX_PLATFORM_TOKEN")) {
+        if (headerNames.includes("X_HTTP_CYBOTIX_PLATFORM_TOKEN")) {
 
-        const platformtoken = getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN");
-        console.log("### X_HTTP_CYBOTIX_PLATFORM_TOKEN: " + platformtoken);
+            const platformtoken = getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN");
+            console.log("### X_HTTP_CYBOTIX_PLATFORM_TOKEN: " + platformtoken);
 
-        console.log(isValidPlatformToken(platformtoken));
-        // validate the platform token
-        if (isValidPlatformToken(platformtoken)) {
-            console.log("platform token is both present and valid");
+            console.log(isValidPlatformToken(platformtoken));
+            // validate the platform token
+            if (isValidPlatformToken(platformtoken)) {
+                console.log("platform token is both present and valid");
 
-            if (headerNames.includes("X_HTTP_CYBOTIX_QUERY_PLUGIN")) {
-                const requesttoken = getNamedHeader(h, "X_HTTP_CYBOTIX_QUERY_PLUGIN");
-                console.log("### X_HTTP_CYBOTIX_QUERY_PLUGIN: " + requesttoken);
+                // check for other cybotix headers and take appropriate action based on what additional headers are present
+                // option 1: X_HTTP_CYBOTIX_DATA_REQUEST
+                // this is a request for data from the user
 
-                // validate the request token
-                // use a fixed value for now
-                // (perhaps: send a message to the content script to validate the token)
+                // option 2. X_HTTP_CYBOTIX_DATA_AGREEMENT_REQUEST
+                // this is a request for the user to accept a data agreement
 
-                if (isValidRequestToken(requesttoken)) {
-                    console.log("request token is both present and valid");
-
-                    const redir_target = getNamedHeader(h, "X_HTTP_CYBOTIX_QUERY_REDIRECT");
-
-                    // Determined which tab and frame this is request is going through
-                    console.log("frameId: " + details.frameId);
-                    console.log("frameType: " + details.frameType);
-                    console.log("tabId: " + details.tabId);
-                    console.log("type: " + details.type);
-                    console.log("redir_target: " + redir_target);
-                    // working with declarativenetrquest dynamically
-                    //import rules from './rules';
-                    //chrome.declarativeNetRequest.updateDynamicRules({
-                    //  removeRuleIds: rules.map((rule) => rule.id), // remove existing rules
-                    //  addRules: rules
-                    //});
-
-                    //
-                    // inject a script into the iframe
-
-                    chrome.scripting
-                    .executeScript({
-                        target: {
-                            tabId: details.tabId,
-                            frameIds: [details.frameId]
-                        },
-                        files: ["redirect-script.js"],
-                    })
-                    .then(function (one) {
-                        console.log("script injected on target frames");
-
-                        // send the token back the page
+                // option 3. X_HTTP_CYBOTIX_QUERY_PLUGIN
+                // just a check to see if the plugin is present in the browser and responsive. No data is requested.
 
 
-                        const message = {
-                            type: 'redirectgreeting',
-                            payload: 'Hello from background script to issue a redirect with payload.',
-                            newurl: redir_target,
-                            headername: "X_HTTP_CYBOTIX_HAVE_PLUGIN",
-                            headervalue: "true",
-                            redir_target: redir_target
 
-                        };
+                if (headerNames.includes("X_HTTP_CYBOTIX_QUERY_PLUGIN")) {
+                    const requesttoken = getNamedHeader(h, "X_HTTP_CYBOTIX_QUERY_PLUGIN");
+                    console.log("### X_HTTP_CYBOTIX_QUERY_PLUGIN: " + requesttoken);
 
-                        chrome.tabs.sendMessage(details.tabId, message, (response) => {
-                            if (chrome.runtime.lastError) {
-                                console.error(chrome.runtime.lastError);
-                                return;
-                            }
-                            console.log('Message sent and response received:', response);
-                        }).then(function (two) {
-                            console.log(two);
-                        }).catch(function (two) {
-                            console.log(two);
+                    // validate the request token
+                    // use a fixed value for now
+                    // (perhaps: send a message to the content script to validate the token)
+
+                    if (isValidRequestToken(requesttoken)) {
+                        console.log("request token is both present and valid");
+
+                        const redir_target = getNamedHeader(h, "X_HTTP_CYBOTIX_QUERY_REDIRECT");
+
+                        // Determined which tab and frame this is request is going through
+                        console.log("frameId: " + details.frameId);
+                        console.log("frameType: " + details.frameType);
+                        console.log("tabId: " + details.tabId);
+                        console.log("type: " + details.type);
+                        console.log("redir_target: " + redir_target);
+                        // working with declarativenetrquest dynamically
+                        //import rules from './rules';
+                        //chrome.declarativeNetRequest.updateDynamicRules({
+                        //  removeRuleIds: rules.map((rule) => rule.id), // remove existing rules
+                        //  addRules: rules
+                        //});
+
+                        //
+                        // inject a script into the iframe
+
+                        chrome.scripting
+                        .executeScript({
+                            target: {
+                                tabId: details.tabId,
+                                frameIds: [details.frameId]
+                            },
+                            files: ["redirect-script.js"],
+                        })
+                        .then(function (one) {
+                            console.log("script injected on target frames");
+
+                            // send the token back the page
+
+
+                            const message = {
+                                type: 'redirectgreeting',
+                                payload: 'Hello from background script to issue a redirect with payload.',
+                                newurl: redir_target,
+                                headername: "X_HTTP_CYBOTIX_HAVE_PLUGIN",
+                                headervalue: "true",
+                                redir_target: redir_target
+
+                            };
+
+                            chrome.tabs.sendMessage(details.tabId, message, (response) => {
+                                if (chrome.runtime.lastError) {
+                                    console.error(chrome.runtime.lastError);
+                                    return;
+                                }
+                                console.log('Message sent and response received:', response);
+                            }).then(function (two) {
+                                console.log(two);
+                            }).catch(function (two) {
+                                console.log(two);
+                            });
+
                         });
 
-                    });
+                    }
+
+                } else if (headerNames.includes("X_HTTP_CYBOTIX_DATA_REQUEST")) {
+                    // data request
+                    console.log("has X_HTTP_CYBOTIX_QUERY_DATA");
+
+                    // set a switch for when it is time to get a close look at any possible data agreements. 
+// only do this is there is a valid request
+var validrequest = false;
+
+// the UUID of the requesting party. 
+var counterparty_id = "company_inc."
+
+                    // Another header is also required, X_HTTP_CYBOTIX_QUERY_REDIRECT, contaning the URL of where to send the response
+                    // If this header is not present, the source URL is used. This is not recommended as it may lead to unexpected results.
+
+                    var redir_target = details.url;
+                    if (headerNames.includes("X_HTTP_CYBOTIX_QUERY_REDIRECT")) {
+                        redir_target = getNamedHeader(h, "X_HTTP_CYBOTIX_QUERY_REDIRECT");
+                    }
+                    const incoming_data_request_message = getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST");
+                    console.debug("incoming_data_request_message: " + incoming_data_request_message);
+                    // check if the message is propperly formated, using a JSON-schema validation operation
+                    // if not, ignore the request
+
+                    const request = base64Decode(incoming_data_request_message);
+                    console.debug(isValidJSON(request));
+// check if request is a propperly formated piece of JSON
+if (isValidJSON(request)){
+    console.debug(isObjectEmpty(request));
+    const d_r = JSON.parse(request);
+console.log(d_r);
+
+console.log(d_r.messagetext);
+console.log(d_r.requests);
+var requests = d_r.requests;
+
+
+
+requests.forEach(function(req){
+console.debug(req);
+//  clickhistory is the only valid requesttype at this time
+if (req.requesttype == "clickhistory");
+validrequest = true;
+console.debug(req.requestdetails)
+
+
+});
+
+
+}
+                   
+if (validrequest){
+    // get the data agreement
+    console.debug("lookup data agreements for: " + counterparty_id);
+}else{
+    console.debug("no valid data requests");
+}
+
+
+
+
+
+
+
+
+                } else if (headerNames.includes("X_HTTP_CYBOTIX_DATA_AGREEMENT_REQUEST")) {
+                    // data agreement request
+                    console.log("has X_HTTP_CYBOTIX_DATA_AGREEMENT_REQUEST");
+                    const requesttoken = getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_AGREEMENT_REQUEST");
+                    if (isValidRequestToken(requesttoken)) {
+                        console.log("has valid request token");
+                        // accept the data request for further processing
+
+                        // check if the user has already granted this data request and the grant is still valid (not suspended or revoked)
+
+                        // lookup the agreement reference ID in the central database
 
                 }
-
-            }else   if (headerNames.includes("X_HTTP_CYBOTIX_QUERY_DATA")) {
-              // data request
-              console.log("has X_HTTP_CYBOTIX_QUERY_DATA");
-              const requesttoken = getNamedHeader(h, "X_HTTP_CYBOTIX_QUERY_DATA");
-              if (isValidRequestToken(requesttoken)) {
-                console.log("has valid request token");
-                // accept the data request for further processing
-
-                // check if the user has already granted this data request and the grant is still valid (not suspended or revoked)
-                
-                // lookup the agreement reference ID in the central database 
-
-
-              }
+            }
 
             }
 
         }
+        if (headerNames.includes("X_HTTP_CYBOTIX_PLATFORM_TOKEN")) {
+            const token = getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN");
+            console.log("### X_HTTP_CYBOTIX_PLATFORM_TOKEN: " + token);
 
-    }
+        }
+        if (headerNames.includes("X_HTTP_CYBOTIX_DATAREQUEST_TOKEN")) {
+            const token = getNamedHeader(h, "X_HTTP_CYBOTIX_DATAREQUEST_TOKEN");
+            console.log("### X_HTTP_CYBOTIX_DATAREQUEST_TOKEN: " + token);
 
-    if (headerNames.includes("X_HTTP_CYBOTIX_PLATFORM_TOKEN")) {
-        const token = getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN");
-        console.log("### X_HTTP_CYBOTIX_PLATFORM_TOKEN: " + token);
+            //    attach the response header to the request going back to
+            // X_HTTP_CYBOTIX_PLUGIN: true
 
-    }
-    if (headerNames.includes("X_HTTP_CYBOTIX_DATAREQUEST_TOKEN")) {
-        const token = getNamedHeader(h, "X_HTTP_CYBOTIX_DATAREQUEST_TOKEN");
-        console.log("### X_HTTP_CYBOTIX_DATAREQUEST_TOKEN: " + token);
-
-        //    attach the response header to the request going back to
-        // X_HTTP_CYBOTIX_PLUGIN: true
+        }
 
     }
 
@@ -395,13 +471,21 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 },
     ['requestHeaders', 'extraHeaders']);
 
+
+
+    function isObjectEmpty(obj) {
+        return Object.keys(obj).length === 0 && obj.constructor === Object;
+    }
+    
+    
+
 // Take a set of response heders and returns entity id if a valid platform token is present.
 // Platform tokens authenticates a buyer/consumer of personal data to the plugin.
 // This is not any sort of authorization to get user data, that comes later, only authentication.
 // The level of assurance in this authentication mechanism is weak and is intended
 // only as computationally quick way to weed out frivolous requests.
 function getValidPlatformToken(h) {
-  console.log("getValidPlatformToken");
+    console.log("getValidPlatformToken");
     for (let i = 0; i < h.length; i++) {
         //     console.log('Iteration:', i, h[i].name, h[i].value);
         if (h[i].name === "X_HTTP_CYBOTIX_PLATFORM_TOKEN") {
@@ -417,7 +501,7 @@ function getValidPlatformToken(h) {
 // Verify that a submitted platform token is valid.
 // Check separate documentation on how to do this.
 function isValidPlatformToken(token) {
-console.log("isValidPlatformToken")
+    console.log("isValidPlatformToken")
     return true;
 }
 
@@ -432,6 +516,21 @@ function isValidRequestToken(token) {
     return true;
 }
 
+
+function base64Decode(input) {
+    // Step 1: Convert base64 string to byte array
+    const raw = atob(input);
+    const rawLength = raw.length;
+    const array = new Uint8Array(new ArrayBuffer(rawLength));
+
+    for (let i = 0; i < rawLength; i++) {
+        array[i] = raw.charCodeAt(i);
+    }
+
+    // Step 2: Decode the byte array to string
+    const textDecoder = new TextDecoder();
+    return textDecoder.decode(array);
+}
 
 function getNamedHeader(h, headerName) {
     // set a max iterations above which stop looking
@@ -448,6 +547,16 @@ function getNamedHeader(h, headerName) {
                 break;
             }
         } catch (e) {}
+    }
+}
+
+
+function isValidJSON(text) {
+    try {
+        JSON.parse(text);
+        return true;
+    } catch (error) {
+        return false;
     }
 }
 
@@ -502,7 +611,6 @@ async function addDataRow(url) {
 
         const browser_id = installationUniqueId.installationUniqueId;
 
-
         const event = new Date();
 
         const userid = "";
@@ -510,7 +618,7 @@ async function addDataRow(url) {
         const message_body = '{ "browser_id":"' + browser_id + '", "url":"' + url + '", "localtime":"' + event.toISOString() + '" }';
         console.log("DEBUG" + message_body);
         // Fetch data from web service (replace with your actual API endpoint)
-        const response = await fetch(server_url+URI_plugin_user_post_click, {
+        const response = await fetch(server_url + URI_plugin_user_post_click, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
