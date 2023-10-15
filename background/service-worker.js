@@ -989,6 +989,7 @@ async function addDataRow(url) {
 
     let domain = url.replace(/.*\:\/\/([^:\/]*)[:\/].*/,"$1");
 
+    
     console.debug("DEBUG,capture addDataRow, domain: " + domain);
 
   console.debug("DEBUG,capture addDataRow, isOnDomainCaptureExclusionList: "+ isOnDomainCaptureExclusionList(domain));
