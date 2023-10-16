@@ -11,6 +11,12 @@
   "content_scripts": [
     {
       "matches": ["*://*/*"],
+      "js": ["./content_scripts/common.js"],
+      "run_at": "document_start"
+    },
+  
+    {
+      "matches": ["*://*/*"],
       "js": ["./content_scripts/content-script.js"],
       "run_at": "document_start"
     }
@@ -35,7 +41,13 @@
     },{
       "resources": ["redirect-script.js"],
       "matches": ["<all_urls>"]
-  }],
+  },{
+    "resources": ["data_request_prompt.js"],
+    "matches": ["<all_urls>"]
+},{
+  "resources": ["promptnotetemplate.html"],
+  "matches": ["<all_urls>"]
+}],
   "options_page": "./pages/options.html",
   "permissions": [
     "activeTab",

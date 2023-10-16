@@ -1,6 +1,6 @@
 
 console.log("Cybotix:  content-script.js loaded");
-
+const user_prompt_data_request_sharedsecret="123456";
 // an object used to store things passed in from the API
 internalStorage = {};
 
@@ -21,7 +21,7 @@ chrome.storage.local.set({ [key]: "value4" }, () => {
 
     //chrome.storage.local.set({A:"b"});
     // Send a message to the Service Worker
-chrome.runtime.sendMessage({type: "CybotixPlatformAccessRequest", payload: "Hello from content script!"});
+//chrome.runtime.sendMessage({type: "CybotixPlatformAccessRequest", payload: "Hello from content script!"});
 
 
 var dataFromPage = event.detail;
@@ -34,18 +34,12 @@ var dataFromPage = event.detail;
 // store the token in the local storage
 const newDiv = document.createElement("div");
   
-// Set the inner HTML of the div
-newDiv.innerHTML = "<h1>Hello, this is inserted by the extension!</h1>";
-const rootElement = document.documentElement;
-console.log(rootElement);
-rootElement.insertBefore(newDiv, rootElement.firstChild);
-//document.body.insertBefore(newDiv, document.body.firstChild);
 
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Check the type of message (you can define your own types)
-    console.log(JSON.stringify(message));
-    console.log(message.type);
+    //console.log(JSON.stringify(message));
+    //console.log(message.type);
     
     if (message.type === 'platformtoken') {
 
@@ -74,6 +68,79 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         //sessionStorage.setItem('CybotixPlatformToken', message.token);
 
      
-    }
+    
+    
+}
+
+
   });
   
+
+  function accept_request(event, uuid) {
+    console.debug("accept_request ");
+    console.debug(event);
+    console.debug(uuid);
+    console.debug(event.target);
+
+    let root_node = findAncestorByAttributeValue(event.target, 'type', 'datarequestnote');
+    console.debug(root_node);
+    if (root_node) {
+        console.log('Found node:', root_node);
+    } else {
+        console.log('Node with the specified attribute value was not found.');
+    }
+console.debug(root_node);
+    try {
+       
+        // assemble the request (including possible modification from the user)
+        var selection_text = root_node.querySelectorAll('input[name="selection_text"]')[0].textContent.trim();
+        console.debug("selection_text: " + selection_text);
+      
+        var original_request = root_node.querySelectorAll('input[name="original_request"]')[0].textContent.trim();
+        console.debug("original_request: " + original_request);
+
+        // collect remarks from the user
+var notes = "";
+
+        // send save request back to background
+        browser.runtime.sendMessage({
+            stickynote: {
+                "request": "single_accept_request",
+                "disable_details": {
+                    "original_request": original_request,
+                    "notes": selection_text,
+                    "enddate":"2023-12-31 23:59:59"
+                }
+            }
+        }, function (response) {
+            console.debug("message sent to backgroup.js with response: " + JSON.stringify(response));
+            // finally, call "close" on the note
+            //  try{
+            //  	close_note(event);
+            //  }catch(g){console.debug(g);}
+
+        });
+        try {
+            close_note(event);
+        } catch (g) {
+            console.debug(g);
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+
+
+function findAncestorByAttributeValue(startNode, attributeName, targetValue) {
+    let currentNode = startNode;
+
+    while (currentNode) {
+        if (currentNode.getAttribute && currentNode.getAttribute(attributeName) === targetValue) {
+            return currentNode; // Found the node with the matching attribute value
+        }
+        currentNode = currentNode.parentNode; // Move up to the parent node
+    }
+
+    return null; // No matching node was found
+}
