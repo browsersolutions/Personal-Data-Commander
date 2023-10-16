@@ -1,9 +1,9 @@
 {
   "name": "Personal Data Commander by Cybotix",
   "description": "User's capture their own click data and store it temporarily in their own data-account",
-  "version": "0.7",
+  "version": "0.7.3",
   "author": "Cybotix Team",
-  "homepage_url": "https://github.com/lars0281/yellowstickynotesforweb",
+  "homepage_url": "https://github.com/",
   "manifest_version": 3,
   "action": {
     "default_icon": "./icons/icon.png"

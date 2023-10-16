@@ -104,7 +104,7 @@ if (a.firstChild) {
 
             const myaccept_note = (event) => {
                 console.log("event.stopPropagation();");
-                accept_request(event);
+                accept_request(event, uuid);
                 event.stopPropagation();
     
             };

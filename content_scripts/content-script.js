@@ -103,9 +103,9 @@ console.debug(root_node);
 var notes = "";
 
         // send save request back to background
-        browser.runtime.sendMessage({
+        chrome.runtime.sendMessage({
             stickynote: {
-                "request": "single_accept_request",
+                "request": "accept_single_datarequest",
                 "disable_details": {
                     "original_request": original_request,
                     "notes": selection_text,
@@ -120,11 +120,8 @@ var notes = "";
             //  }catch(g){console.debug(g);}
 
         });
-        try {
-            close_note(event);
-        } catch (g) {
-            console.debug(g);
-        }
+       
+        
     } catch (e) {
         console.error(e);
     }

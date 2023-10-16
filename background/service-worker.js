@@ -550,7 +550,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             type: "acknowledgment",
             payload: "Hello from background script!"
         });
+    }else if (message.type === "accept_single_datarequest") {
+        console.log("Received message from content script:", message);
+        console.log("Received message from content script:", sender);
+    
+
     }
+
+
+
+
+
+
+    accept_single_request
+
 });
 
 function executeScriptOnTab(tabId, scriptName) {
