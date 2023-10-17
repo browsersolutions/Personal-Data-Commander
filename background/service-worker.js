@@ -3,6 +3,12 @@ const server_url = "http://localhost:3000";
 
 const URI_plugin_user_post_click = "/plugin_user_post_click";
 const URI_plugin_user_delete_click = "/plugin_user_delete_click";
+const URI_plugin_user_create_access_token  = "/plugin_user_create_access_token";
+const URI_plugin_user_query_accesstoken_status = "/plugin_user_query_accesstoken_status";
+
+const URI_plugin_user_check_request_against_data_agreements = "/plugin_user_check_request_against_data_agreements";
+
+const URI_plugin_user_add_data_agreement = "/plugin_user_add_data_agreement";
 
 const valid_audience_values = {
     "cybotix-personal-data-commander": "1",
@@ -251,7 +257,8 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
     console.log(details.type);
     if (details.type == "main_frame" || details.type == "sub_frame") {
         console.log(JSON.stringify(details));
-
+        var counterparty_id;
+        var platformtokencontent;
         const h = details.responseHeaders;
         const headerNames = getHeaderNames(details.responseHeaders);
         console.log('HTTP header names:', headerNames);
@@ -270,12 +277,11 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                 //validateJwtWithPublicKey(platformtoken,"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzNDQRPGUPmpUj3K7D0LoucRrCuAwLLD7B0i9iOfJLXps9lN05+bL8H24eVGwb8UO+Ip+2GQrLlPoErvuqqftv9heKQ9C6P3dNPFHsgcJqLIT2qYOWRXqceKdV5VshGzVRdS7v+/giWn4uTkEFskor9JZJFnxredZyOK7Buc/WvU1yt40FQum1/mpCPCmKcqulBib93PpwlXkjyZfbmQHG5QQ/DSg2bE607SrXc0vRYhrHfiuncSbfkKaxPA4C/YQr/4QbyX1Hm/IzKrToaWwghjF0uP0VWVlHJ1xfyGlxQvPllQpa6t7FuBx3N9xJ1OEsGRo4gS7ctiogHVwh1M5oQIDAQAB","cybotix-personal-data-commander").then(
                 parseJWTbypassSignCheck(platformtoken, "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzNDQRPGUPmpUj3K7D0LoucRrCuAwLLD7B0i9iOfJLXps9lN05+bL8H24eVGwb8UO+Ip+2GQrLlPoErvuqqftv9heKQ9C6P3dNPFHsgcJqLIT2qYOWRXqceKdV5VshGzVRdS7v+/giWn4uTkEFskor9JZJFnxredZyOK7Buc/WvU1yt40FQum1/mpCPCmKcqulBib93PpwlXkjyZfbmQHG5QQ/DSg2bE607SrXc0vRYhrHfiuncSbfkKaxPA4C/YQr/4QbyX1Hm/IzKrToaWwghjF0uP0VWVlHJ1xfyGlxQvPllQpa6t7FuBx3N9xJ1OEsGRo4gS7ctiogHVwh1M5oQIDAQAB")
                 .then(function (payload) {
-                    console.log(payload);
 
                     return validatePlatformToken(payload);
                 }).then(function (data) {
-
-                    console.log(data);
+                    platformtokencontent = data;
+                    console.log(platformtokencontent);
 
                     //function (entityid) {
                     console.log("platform token is both present and valid");
@@ -369,23 +375,26 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                         // set a switch for when it is time to get a close look at any possible data agreements.
                         // only do this is there is a valid request
                         var validrequest = false;
-
+                        var activetab_id;
                         // the UUID of the requesting party.
-                        var counterparty_id = "company_inc."
+                        counterparty_id = platformtokencontent.sub;
 
-                            // Another header is also required, X_HTTP_CYBOTIX_QUERY_REDIRECT, contaning the URL of where to send the response
-                            // If this header is not present, the source URL is used. This is not recommended as it may lead to unexpected results.
+                        // Another header is also required, X_HTTP_CYBOTIX_QUERY_REDIRECT, contaning the URL of where to send the response
+                        // If this header is not present, the source URL is used. This is not recommended as it may lead to unexpected results.
 
-                            var redir_target = details.url;
+                        var redir_target = details.url;
                         if (headerNames.includes("X_HTTP_CYBOTIX_QUERY_REDIRECT")) {
                             redir_target = getNamedHeader(h, "X_HTTP_CYBOTIX_QUERY_REDIRECT");
                         }
+
                         const incoming_data_request_message = getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST");
                         console.debug("incoming_data_request_message: " + incoming_data_request_message);
                         // check if the message is propperly formated, using a JSON-schema validation operation
                         // if not, ignore the request
                         var request_payload;
                         const request = base64Decode(incoming_data_request_message);
+                        console.debug(request);
+
                         console.debug(isValidJSON(request));
                         // check if request is a propperly formated piece of JSON
                         if (isValidJSON(request)) {
@@ -405,53 +414,105 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                     validrequest = true;
                                     console.debug(req.requestdetails);
 
-                                    const user_prompt_data_request = "123456";
-                                    // call to active tab and have the content script present the interation page
+                                    // check if the request has been granted before and if so, if it is still valid
+                                    // look up what agreements this requestor has with the user, if any.
+                                    console.debug("look for possible valid agreement already in place that might cover this data access request");
+                                    // call to the Cybotix API with the same two headers as above
+
                                     try {
-
-                                        var activetab_id;
-                                        getActiveTab()
-                                        .then(tab => {
-                                            console.log("Active tab:", tab);
-                                            activetab_id = tab.id;
-                                            return executeScriptOnTab(tab.id, 'data_request_prompt.js');
-                                        })
-                                        .then(result => {
-                                            console.log("Script execution result:", result);
-                                        })
-                                        .catch(err => {
-                                            console.error("Error:", err);
-                                        }).then(function (tab) {
-                                            console.log(tab);
-                                            // send the token back the page
-                                            // generates random id;
-                                            let guid = () => {
-                                                let s4 = () => {
-                                                    return Math.floor((1 + Math.random()) * 0x10000)
-                                                    .toString(16)
-                                                    .substring(1);
-                                                }
-                                                return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-                                            }
-
-                                            const message = {
-                                                type: 'datarequest',
-                                                prompt_id: guid(),
-                                                payload: 'Hello from background script!',
-                                                secret: user_prompt_data_request,
-                                                complete_req: request_payload,
-                                                requestdetails: req.requestdetails
-                                            };
-                                            return chrome.tabs.sendMessage(activetab_id, message);
+                                        var installationUniqueId;
+                                        chrome.storage.local.get(['installationUniqueId']).then(function (ins) {
+                                            installationUniqueId = ins.installationUniqueId;
+                                            const event = new Date();
+                                            const userid = "";
+                                            // Fetch data from web service (replace with your actual API endpoint)
+                                            return fetch(server_url + URI_plugin_user_check_request_against_data_agreements, {
+                                                method: 'GET',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    [plugin_uuid_header_name]: installationUniqueId,
+                                                    'X_HTTP_CYBOTIX_DATA_REQUEST': getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"),
+                                                    'X_HTTP_CYBOTIX_PLATFORM_TOKEN': getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN")
+                                                },
+                                            });
                                         }).then(function (response) {
-                                            if (chrome.runtime.lastError) {
-                                                console.error(chrome.runtime.lastError);
-                                                return;
-                                            }
-                                            console.log('Message sent and response received:', response);
-                                        });
+                                            console.log(response);
+                                            // Parse JSON data
+                                            return response.json();
 
-                                    } catch (err) {
+                                        }).then(function (data) {
+                                            console.log(data);
+                                            console.log(data.covered);
+                                            if (data.covered == "true") {
+                                                console.log("data request is covered by an existing agreement");
+                                                // fork out of the promise chain here, move to issue the access token
+// call to the create-access-token API
+return fetch(server_url + URI_plugin_user_create_access_token, {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json',
+        [plugin_uuid_header_name]: installationUniqueId,
+        'X_HTTP_CYBOTIX_DATA_REQUEST': getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"),
+        'X_HTTP_CYBOTIX_PLATFORM_TOKEN': getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN")
+    },
+});
+
+
+                                            } else {
+                                                console.log("data request is not covered by an existing agreement");
+                                                getActiveTab().then(tab => {
+                                                    console.log("Active tab:", tab);
+                                                    activetab_id = tab.id;
+                                                    return executeScriptOnTab(tab.id, 'data_request_prompt.js');
+                                                })
+                                                .then(result => {
+                                                    console.log("Script execution result:", result);
+                                                    // send the token back the page
+                                                    // generates random id;
+                                                    let guid = () => {
+                                                        let s4 = () => {
+                                                            return Math.floor((1 + Math.random()) * 0x10000)
+                                                            .toString(16)
+                                                            .substring(1);
+                                                        }
+                                                        return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+                                                    }
+
+                                                    const message = {
+                                                        type: 'datarequest',
+                                                        prompt_id: guid(),
+                                                        payload: 'Hello from background script!',
+                                                        secret: user_prompt_data_request_acceptance_sharedsecret,
+                                                        complete_req: request_payload,
+                                                        requestdetails: req.requestdetails
+                                                    };
+                                                    console.debug(message);
+                                                    console.debug("activetab_id: " + activetab_id);
+                                                    return chrome.tabs.sendMessage(activetab_id, message);
+                                                }).then(function (response) {
+                                                    if (chrome.runtime.lastError) {
+                                                        console.error(chrome.runtime.lastError);
+                                                        return;
+                                                    }
+                                                    console.log('Message sent and response received:', response);
+                                                });
+
+                                            }
+                                           
+                                       
+                                         });
+                                    } catch (error) {
+                                        console.error(error);
+                                    }
+
+                                    /// /plugin_user_check_request_against_data_agreements
+
+
+                                    var user_prompt_data_request_acceptance_sharedsecret = "1235u6htetb5tb354b35b456";
+
+                                    // call to active tab and have the content script present the interation page
+                                    try {}
+                                    catch (err) {
                                         console.log(err);
                                     }
 
@@ -461,9 +522,9 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
 
                         if (validrequest) {
                             // get the data agreement
-                            console.debug("lookup data agreements for: " + counterparty_id);
+                            //   console.debug("lookup data agreements for: " + counterparty_id);
                         } else {
-                            console.debug("no valid data requests");
+                            //  console.debug("no valid data requests");
                         }
 
                     } else if (headerNames.includes("X_HTTP_CYBOTIX_DATA_AGREEMENT_REQUEST")) {
@@ -477,7 +538,6 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                             // check if the user has already granted this data request and the grant is still valid (not suspended or revoked)
 
                             // lookup the agreement reference ID in the central database
-
                         }
                     }
                 });
@@ -536,6 +596,8 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     console.log("Received message from content script:", message);
+    //    console.log("Received message from content script:", message.message);
+    console.log("Received message from content script:", message.type);
     console.log("Received message from content script:", sender);
 
     if (message.type === "CybotixPlatformAccessRequest") {
@@ -550,19 +612,60 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             type: "acknowledgment",
             payload: "Hello from background script!"
         });
-    }else if (message.type === "accept_single_datarequest") {
+    } else if (message.type == "accept_single_datarequest") {
         console.log("Received message from content script:", message);
+        console.log(message.agreement_details);
         console.log("Received message from content script:", sender);
-    
+        // create agreement in database
+
+        // include the original agreement request
+
+        var agreement = {
+            principal_name: "2342",
+            principal_id: "2342",
+            counterparty_name: "Web Shop Inc.",
+            counterparty_id: "65232",
+            notebefore: message.agreement_details.notebefore,
+            notafter: message.agreement_details.notafter,
+            original_request: message.agreement_details.original_request
+        };
+
+        // store the agreement in the database
+
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+
+            const event = new Date();
+
+            const userid = "";
+            //console.log("deleting: " + id);
+            const message_body = JSON.stringify(agreement);
+            console.log("DEBUG" + message_body);
+            // Fetch data from web service (replace with your actual API endpoint)
+
+            return fetch(server_url + URI_plugin_user_add_data_agreement, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [plugin_uuid_header_name]: installationUniqueId
+                },
+                body: message_body // example IDs, replace as necessary
+            });
+        }).then(function (response) {
+            console.log(response);
+            // Check for errors
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+        });
 
     }
-
-
-
-
-
-
-    accept_single_request
 
 });
 

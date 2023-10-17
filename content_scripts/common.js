@@ -1,10 +1,3 @@
-/**
- * 
- */
-
-
-var yellowstockynote_text_opening = "yellowstickynote=";
-var yellowstockynote_text_closing = "=yellowstickynote";
 
 
 /**
@@ -431,181 +424,6 @@ return b;
     }
 
 
-function nodesAreIdentical(node1, node2) {
-    // Check if node types are the same
-    if (node1.nodeType !== node2.nodeType) return false;
-
-    // If they are element nodes, check the tag name
-    if (node1.nodeType === Node.ELEMENT_NODE && node1.tagName !== node2.tagName) return false;
-
-    // If they have different text content (for text nodes)
-    if (node1.nodeType === Node.TEXT_NODE && node1.textContent !== node2.textContent) return false;
-
-    // Check attributes
-    if (node1.attributes && node2.attributes) {
-        if (node1.attributes.length !== node2.attributes.length) return false;
-        for (let i = 0; i < node1.attributes.length; i++) {
-            const attr1 = node1.attributes[i];
-            const attr2 = node2.getAttribute(attr1.name);
-            if (attr1.value !== attr2) return false;
-        }
-    }
-
-    // Check children nodes recursively
-    const children1 = node1.childNodes;
-    const children2 = node2.childNodes;
-    if (children1.length !== children2.length) return false;
-    for (let i = 0; i < children1.length; i++) {
-        if (!nodesAreIdentical(children1[i], children2[i])) return false;
-    }
-
-    return true;
-}
-
-// Example usage:
-// const result = nodesAreIdentical(nodeA, nodeB);
-// console.log(result);  // true if nodes are identical, false otherwise
-
-
-function attachEventlistenersToYellowStickynote(note) {
-    console.log("attachEventlistenersToYellowStickynote.start");
-    console.debug(note);
-
-    try {
-
-        const mySave_new_note = (event) => {
-            event.stopPropagation();
-            save_new_note(event);
-            event.stopPropagation();
-        };
-        const myclose_note = (event) => {
-            close_note(event);
-            event.stopPropagation();
-        };
-
-        const myCopy_note_to_clipboard = (event) => {
-            copy_note_to_clipboard(event);
-            event.stopPropagation();
-        };
-
-       
-        const myminimize_note = (event) => {
-            minimize_note(event);
-            event.stopPropagation();
-        };
-
-        const mymaximize_note = (event) => {
-            maximize_note(event);
-            event.stopPropagation();
-        };
-        const myrightsize_note = (event) => {
-            rightsize_note(event);
-            event.stopPropagation();
-        };
-
-        const mydelete_note = (event) => {
-            delete_note(event);
-            event.stopPropagation();
-        };
-        const mySave_changes_to_note = (event) => {
-            save_changes_to_note(event);
-            event.stopPropagation();
-        };
-        const mydisable_note = (event) => {
-            disable_note(event);
-            event.stopPropagation();
-        };
-
-        const mylocate_note = (event) => {
-            console.log("event.stopPropagation();");
-            locate_note(event);
-            event.stopPropagation();
-
-        };
-
-
-
-        // for close buttons/icons
-        var allGoTo = note.querySelectorAll('[js_action="close_note"]');
-        for (var i = 0; i < allGoTo.length; i++) {
-            allGoTo[i].removeEventListener("click", myclose_note);
-            allGoTo[i].addEventListener("click", myclose_note);
-        }
-
-        // for save buttons/icons
-        var allGoTo3 = note.querySelectorAll('[js_action="save_new_note"]');
-        for (var i = 0; i < allGoTo3.length; i++) {
-            allGoTo3[i].removeEventListener("click", mySave_new_note);
-            allGoTo3[i].removeEventListener("click", mySave_changes_to_note);
-            allGoTo3[i].addEventListener("click", mySave_new_note);
-        }
-
-
-        // for delete buttons/icons
-        var allGoTo2 = note.querySelectorAll('[js_action="delete_note"]');
-        for (var i = 0; i < allGoTo2.length; i++) {
-            allGoTo2[i].removeEventListener("click", mydelete_note);
-            allGoTo2[i].addEventListener("click", mydelete_note);
-        }
-
-       
-        var allGoTo5 = note.querySelectorAll('[js_action="copy_note_to_clipboard"]');
-        for (var i = 0; i < allGoTo5.length; i++) {
-            console.debug(allGoTo5[i]  );
-            allGoTo5[i].removeEventListener("click", myCopy_note_to_clipboard);
-            allGoTo5[i].addEventListener("click", myCopy_note_to_clipboard);
-        }
-
-
-        var allGoTo7 = note.querySelectorAll('[js_action="save_changes_to_note"]');
-        for (var i = 0; i < allGoTo7.length; i++) {
-            allGoTo7[i].removeEventListener("click", mySave_new_note);
-            allGoTo7[i].removeEventListener("click", mySave_changes_to_note);
-            allGoTo7[i].addEventListener("click", mySave_changes_to_note);
-        }
-
-        var allGoTo8 = note.querySelectorAll('[js_action="disable_note"]');
-        for (var i = 0; i < allGoTo8.length; i++) {
-            allGoTo8[i].removeEventListener("click", mydisable_note);
-            allGoTo8[i].addEventListener("click", mydisable_note);
-          
-          
-
-        }
- // for button going to note location
-        var allGoTo11 = note.querySelectorAll('[js_action="locate_note"]');
-        for (var i = 0; i < allGoTo11.length; i++) {
-            allGoTo11[i].removeEventListener("click", mylocate_note);
-            allGoTo11[i].addEventListener("click", mylocate_note);
-          
-        }
-
-
-        var allGoTo12 = note.querySelectorAll('[js_action="minimize_note"]');
-        for (var i = 0; i < allGoTo12.length; i++) {
-            allGoTo12[i].removeEventListener("click", myminimize_note);
-            allGoTo12[i].addEventListener("click", myminimize_note);
-       }
-
-       var allGoTo13 = note.querySelectorAll('[js_action="maximize_note"]');
-       for (var i = 0; i < allGoTo13.length; i++) {
-           allGoTo13[i].removeEventListener("click", mymaximize_note);
-           allGoTo13[i].addEventListener("click", mymaximize_note);
-      }
-      var allGoTo14 = note.querySelectorAll('[js_action="rightsize_note"]');
-      for (var i = 0; i < allGoTo14.length; i++) {
-          allGoTo14[i].removeEventListener("click", myrightsize_note);
-          allGoTo14[i].addEventListener("click", myrightsize_note);
-     }
-
-
-
-    } catch (e) {
-        console.error(e);
-    }
-
-}
-
 
 
 
@@ -707,49 +525,6 @@ function ignore(elm) {
     return false
 }
 
-// contain node object and the position within overall text (white space removed)
-var textnode_map = [];
-
-
-// create a node array of text content nodes in document order
-function traverse(elm) {
-    // produce a string of all test concatenated
-    //var text_str = "";
-    // Produce an array of all nodes
-    //console.debug("#traverse");
-
-    if (elm.nodeType == Node.ELEMENT_NODE || elm.nodeType == Node.DOCUMENT_NODE) {
-        // console.debug("1.0.1");
-
-        // exclude elements with invisible text nodes
-        if (isExcluded(elm)) {
-            return
-        }
-
-        for (var i = 0; i < elm.childNodes.length; i++) {
-            // recursively call to traverse
-            traverse(elm.childNodes[i]);
-        }
-
-    }
-
-    if (elm.nodeType == Node.TEXT_NODE) {
-        //  console.debug("1.0.2");
-        // exclude text node consisting of only spaces
-        if (elm.nodeValue.trim() == "") {
-            return
-        }
-
-        // elm.nodeValue here is visible text we need.
-        //  console.log("##");
-        //   console.log(elm.nodeValue);
-        var start_position = whole_page_text.length;
-        whole_page_text = whole_page_text + elm.nodeValue.replace(/\s/g, "");
-        var end_position = whole_page_text.length;
-        textnode_map.push([start_position, end_position, elm]);
-
-    }
-}
 
 
 
@@ -870,37 +645,6 @@ function locateStickyNote(request, sender, sendResponse) {
 }
 
 
-function getYellowStickyNoteRoot(currentElement) {
-
-    // let currentElement = element;
-    // container type="yellowstickynote"
-    //console.log(currentElement);
-    //console.log(currentElement.querySelector('container[type="yellowstickynote"]'));
-
-    if (currentElement.hasAttribute("type"))  {
-        if (currentElement.getAttribute("type") === "yellowstickynote" ){
-        
-        // Condition met, return this element
-        return currentElement;
-        }
-    }
-    while (currentElement !== null && currentElement !== document) {
-        //console.log(currentElement);
-        //console.log(currentElement.querySelector('container[type="yellowstickynote"]'));
-        if (currentElement.hasAttribute("type"))  {
-            if (currentElement.getAttribute("type") === "yellowstickynote" ){
-            
-            // Condition met, return this element
-            return currentElement;
-            }
-        }
-        // Move up the DOM tree to the parent node
-        currentElement = currentElement.parentNode;
-    }
-
-    // If the loop completes without finding an element with the target class
-    return null;
-}
 
 function getCursorXY(e) {
     //console.debug("########");
@@ -919,30 +663,6 @@ function getCursorXY(e) {
     //	document.getElementById('cursorX').value = (window.Event) ? e.pageX : event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
     //		document.getElementById('cursorY').value = (window.Event) ? e.pageY : event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
 }
-
-function serialize_note(out) {
-
-    //return  JSON.stringify(out).replace(/":"/g,"__del__").replace(/","/g,"__sep__").replace(/\{"/g,"__left__").replace(/"\}/g,"__right__");
-    return encodeURI(JSON.stringify(out).replace(/":"/g, "__del__").replace(/","/g, "__sep__"));
-}
-
-function deserialize_note(out) {
-console.debug("# deserialize_note");
-
-
-
-    //return  JSON.stringify(out).replace(/":"/g,"__del__").replace(/","/g,"__sep__").replace(/\{"/g,"__left__").replace(/"\}/g,"__right__");
-    //console.debug(out.replace(/"__del__"/g,":").replace(/"__sep__"/g,",").replace(/__left__"/g,"\{").replace(/__right__/g,"0\"\}"));
-    //return  out.replace(/__del__/g,":").replace(/__sep__/g,",").replace(/__left__/g,"\{").replace(/__right__/g,"0\"\}");
-
-    //return  JSON.stringify(out).replace(/":"/g,"__del__").replace(/","/g,"__sep__").replace(/\{"/g,"__left__").replace(/"\}/g,"__right__");
-    console.debug(out.replace(/"__del__"/g, ":").replace(/"__sep__"/g, ",").replace(/__left__"/g, "\{\"").replace(/__right__/g, "\"\}"));
-    return JSON.parse(decodeURI(out).replace(/__del__/g, "\":\"").replace(/__sep__/g, "\",\"").replace(/__left__/g, "\{\"").replace(/__right__/g, "\"\}"));
-
-
-
-}
-
 
 
 function isSticyNoteRoot(ele) {
@@ -963,43 +683,6 @@ try{
     return false;
 }
 
-}
-
-function longest_common_substring(lcstest_raw, lcstarget_raw) {
-    // ")" not supported
-    //console.debug(lcstest_raw);
-    //console.debug(lcstarget_raw);
-
-    // remove some characters that would screw-up the matching if they are present
-    var lcstest = lcstest_raw.replace(/[\)\?]/g, "");
-    var lcstarget = lcstarget_raw.replace(/[\)\?]/g, "");
-
-    //console.debug(lcstest);
-    //console.debug(lcstarget);
-
-    matchfound = 0
-        lsclen = lcstest.length
-        for (lcsi = 0; lcsi < lcstest.length; lcsi++) {
-            lscos = 0
-                for (lcsj = 0; lcsj < lcsi + 1; lcsj++) {
-                    re = new RegExp("(?:.{" + lscos + "})(.{" + lsclen + "})", "i");
-                    temp = re.test(lcstest);
-                    re = new RegExp('(' + RegExp.$1 + ')', 'i');
-                    if (re.test(lcstarget)) {
-                        matchfound = 1;
-                        result = RegExp.$1;
-                        break;
-                    }
-                    lscos = lscos + 1;
-                }
-                if (matchfound == 1) {
-                    return result;
-                    break;
-                }
-                lsclen = lsclen - 1;
-        }
-        result = "";
-    return result;
 }
 
 

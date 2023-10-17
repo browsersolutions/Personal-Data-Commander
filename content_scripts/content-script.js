@@ -1,6 +1,7 @@
 
 console.log("Cybotix:  content-script.js loaded");
 const user_prompt_data_request_sharedsecret="123456";
+
 // an object used to store things passed in from the API
 internalStorage = {};
 
@@ -102,21 +103,34 @@ console.debug(root_node);
         // collect remarks from the user
 var notes = "";
 
+var message = {
+    type: "accept_single_datarequest",
+    agreement_details: {
+        original_request: JSON.parse(original_request),
+        notes: notes,
+        uuid: uuid,
+        notbefore:"2021-12-31 23:59:59",
+        notafter:"2023-12-31 23:59:59"
+    }
+};
+console.debug(message);
         // send save request back to background
-        chrome.runtime.sendMessage({
-            stickynote: {
-                "request": "accept_single_datarequest",
-                "disable_details": {
-                    "original_request": original_request,
-                    "notes": selection_text,
-                    "enddate":"2023-12-31 23:59:59"
-                }
-            }
-        }, function (response) {
+        chrome.runtime.sendMessage(
+           message
+        , function (response) {
             console.debug("message sent to backgroup.js with response: " + JSON.stringify(response));
             // finally, call "close" on the note
             //  try{
-            //  	close_note(event);
+             
+                 try {
+
+                        console.debug("closing...");
+                        console.debug(root_node);
+                        root_node.remove();
+            
+                } catch (e) {
+                    console.error(e);
+                }
             //  }catch(g){console.debug(g);}
 
         });

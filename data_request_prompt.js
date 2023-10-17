@@ -1,5 +1,8 @@
 console.debug("Cybotix:  data_request_prmopt.js loaded");
 
+
+var user_prompt_data_request_acceptance_sharedsecret = "1235u6htetb5tb354b35b456";
+
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Check the type of message (you can define your own types)
@@ -10,7 +13,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 console.log("datarequest received");
 console.log(message);
 // screenout other message
-if (message.secret === user_prompt_data_request_sharedsecret){
+console.debug(message.secret);
+console.debug();
+
+if (message.secret === user_prompt_data_request_acceptance_sharedsecret){
 
     create_note(message);
 
