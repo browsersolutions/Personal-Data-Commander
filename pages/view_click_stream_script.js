@@ -105,6 +105,7 @@ console.debug(response);
             // Add delete button
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Delete';
+            deleteButton.classList.add('deleteBtn')
             deleteButton.onclick = function () {
                 // Remove the row from the table
                 newRow.remove();
@@ -244,6 +245,7 @@ function filterTable(colheader) {
         }
     }
 }
+
 
 // Fetch data on page load
 fetchData();

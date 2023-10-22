@@ -48,7 +48,7 @@
   "resources": ["promptnotetemplate.html"],
   "matches": ["<all_urls>"]
 }],
-  "options_page": "./pages/options.html",
+  "options_page": "./pages/view_click_stream.html",
   "permissions": [
     "activeTab",
     "declarativeNetRequest",

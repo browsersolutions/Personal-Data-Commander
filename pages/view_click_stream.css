@@ -12,7 +12,7 @@
 
   /* Add styles for scrollable table */
   .scrollable-table {
-    height: 450px; /* Adjust height as needed */
+    height: 370px; /* Adjust height as needed */
     overflow-y: auto;
     display: block;
   }
@@ -21,11 +21,14 @@
   table {
     border: 1px solid #4CAF50;
     border-collapse: collapse;
-    margin: 15px 0;
+    margin: 15px auto;
     padding: 0;
-    width: 80%;
+    width: 100%;
     table-layout: fixed;
+    /* height: 300px;
+    overflow-y: auto; */
   }
+  
   /* the first colum contains the data row ID. This information means nothing to the user, so do not display it*/
   #dataTable th:first-child,
   #dataTable td:first-child {
@@ -64,7 +67,7 @@
   }
 
   table td {
-    font-size: .35em;
+    font-size: .6em;
     color: #388E3C;
     word-break: break-all;
   }
