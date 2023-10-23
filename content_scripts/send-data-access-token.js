@@ -16,10 +16,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log(message.type);
     document.body.style.backgroundColor = 'yellow';
 
+const X_HTTP_CYBOTIX_DATA_ACCESSTOKEN =  message.token;
+const X_HTTP_CYBOTIX_DATA_REQUEST =  message.datarequest;
+console.log(X_HTTP_CYBOTIX_DATA_ACCESSTOKEN);
+console.log(X_HTTP_CYBOTIX_DATA_REQUEST);
+
     fetch(message.newurl, {
       method: 'GET',
       headers: {
-          'X_HTTP_CYBOTIX_DATA_ACCESSTOKEN': message.dataaccesstoken
+          X_HTTP_CYBOTIX_DATA_ACCESSTOKEN:X_HTTP_CYBOTIX_DATA_ACCESSTOKEN, 
+          X_HTTP_CYBOTIX_DATA_REQUEST: X_HTTP_CYBOTIX_DATA_REQUEST
       },
   }).then(response => {
         if (!response.ok) {

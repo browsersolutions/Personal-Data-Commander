@@ -357,7 +357,7 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                     tabId: details.tabId,
                                     frameIds: [details.frameId]
                                 },
-                                files: ["redirect-script.js"],
+                                files: ["./content_scripts/redirect-script.js"],
                             })
                             .then(function (one) {
                                 console.log("script injected on target frames");
@@ -500,7 +500,7 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                                             tabId: details.tabId,
                                                             frameIds: [details.frameId]
                                                         },
-                                                        files: ["senddataaccesstokenscript.js"],
+                                                        files: ["./content_scripts/send-data-access-token.js"],
                                                     });
                                                 }).then(function (response) {
 
@@ -514,10 +514,13 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                                         newurl: redir_target,
                                                         headername: "X_HTTP_CYBOTIX_HAVE_PLUGIN",
                                                         headervalue: "true",
+                                                        datarequest: getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"),
+                                                        platformtoken: token,
                                                         token: token,
                                                         redir_target: redir_target
 
                                                     };
+                                                    console.log(message);
                                                     return chrome.tabs.sendMessage(details.tabId, message);
                                                 }).then(function (response) {
 
@@ -545,7 +548,7 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                                     target: {
                                                         tabId: details.tabId
                                                     },
-                                                    files: ["data_request_prompt.js"],
+                                                    files: ["./content_scripts/data_request_prompt.js"],
                                                 }).then(function (response) {
                                                     console.log(response);
                                                     var user_prompt_data_request_acceptance_sharedsecret = "1235u6htetb5tb354b35b456";
@@ -672,7 +675,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // include the original agreement request
 // lookup values from the platform token
 //console.log(details);
-var data_grants = JSON.stringify((JSON.parse(base642str(message.agreement_details.original_message))).requests);
+var data_grants = (JSON.parse(base642str(message.agreement_details.original_message))).requests;
 console.log(data_grants);
         var agreement = {
             principal_name: "2342",

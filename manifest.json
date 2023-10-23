@@ -1,7 +1,7 @@
 {
   "name": "Personal Data Commander by Cybotix",
   "description": "User's capture their own click data and store it temporarily in their own data-account",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "author": "Cybotix Team",
   "homepage_url": "https://github.com/",
   "manifest_version": 3,
@@ -39,12 +39,6 @@
       "matches": ["*://*/*"],
       "use_dynamic_url": true
     },{
-      "resources": ["redirect-script.js"],
-      "matches": ["<all_urls>"]
-  },{
-    "resources": ["data_request_prompt.js"],
-    "matches": ["<all_urls>"]
-},{
   "resources": ["promptnotetemplate.html"],
   "matches": ["<all_urls>"]
 }],
