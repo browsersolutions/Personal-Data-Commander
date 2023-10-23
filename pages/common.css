@@ -322,7 +322,7 @@ a {
 }
 
 .sidebarMenuList a:hover .historyIcon,
-.sidebarMenuList a.active .purchasesIcon {
+.sidebarMenuList a.active .historyIcon {
   background-position: -40px -36px;
 }
 
