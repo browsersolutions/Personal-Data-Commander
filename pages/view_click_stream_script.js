@@ -81,6 +81,11 @@ async function fetchData() {
         // Get table body element
         const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
 
+        if (tableBody.rows.length) {
+            tableBody.rows.forEach(row => {
+                if (row) row.deleteRow();
+            });
+        }
         // Loop through data and populate the table
         data.forEach(row => {
             //        console.log(row);
@@ -103,7 +108,7 @@ async function fetchData() {
             const anchor = document.createElement('a');
 
             // Set the anchor's text and href attributes
-            anchor.href = row.url; 
+            anchor.href = row.url;
             anchor.target = '_blank'
             anchor.title = row.url;
             if (row.url.length > 100) {
