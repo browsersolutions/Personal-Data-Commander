@@ -21,7 +21,6 @@ body {
   padding: 0;
   margin: 0;
 }
-
 ul,
 li {
   list-style-type: none;
@@ -488,6 +487,7 @@ a {
   border-top: 0;
   padding: 25px 20px;
   border-radius: 0 10px 10px 10px;
+  margin-bottom: 30px;
 }
 
 .tableResponsive {
@@ -691,6 +691,8 @@ a {
 }
 .offersList .textBox {
   margin: 0 15px 15px;
+  min-height: 260px;
+  position: relative;
 }
 .offersList h2 {
   margin: 0 0 10px;
@@ -704,12 +706,22 @@ a {
 }
 .offersList a {
   color: #ff5400;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 /* media query start here----------*/
 @media (min-width: 768px) and (max-width: 1024px) {
+  .container-fluid {
+    height: auto;
+  }
   .container {
     width: 75%;
     margin-left: 15%;
+  }
+  .offersList .textBox {
+    min-height: 385px;
   }
 }
