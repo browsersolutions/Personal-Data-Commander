@@ -3,7 +3,7 @@ const server_url = "http://localhost:3000";
 
 const URI_plugin_user_post_click = "/plugin_user_post_click";
 const URI_plugin_user_delete_click = "/plugin_user_delete_click";
-const URI_plugin_user_create_access_token  = "/plugin_user_create_access_token";
+const URI_plugin_user_create_dataaccess_token = "/plugin_user_create_dataaccess_token";
 const URI_plugin_user_query_accesstoken_status = "/plugin_user_query_accesstoken_status";
 
 const URI_plugin_user_check_request_against_data_agreements = "/plugin_user_check_request_against_data_agreements";
@@ -248,15 +248,40 @@ function getHeaderNames(responseHeaders) {
 }
 
 // pick up on platform headers
+/*
+Incomming http headers dictates what actions the plugin whould take
+
+Any request must include the header X_HTTP_CYBOTIX_PLATFORM_TOKEN, containing a valid JWT token.
+This is the platform token. and counts as the authentication mechanism for the plugin.
+The platform token is checked, and if valid, the plugin will take action based on the other headers present.
+
+
+The following headers are used by the plugin:
+
+X_HTTP_CYBOTIX_DATA_REQUEST
+This header is used to request data from the user. The header contains a JWT token,
+This could come along with a third header, X_HTTP_CYBOTIX_QUERY_REDIRECT
+
+
+
+
+
+ */
 chrome.webRequest.onHeadersReceived.addListener(function (details) {
     // console.log('################################');
     // console.log('############## onHeadersReceived');
     // console.log('################################');
     // examine the http header for the X_HTTP_CYBOTIX_PLATFORM_TOKEN and if present, verify validity.
     // is so, check for other Cybotix headers and take action accordingly
+
+    // if from a sub_frame, the answer must be sent back to the same sub_frame.
+    //var frameId = details.frameId;
     console.log(details.type);
+
     if (details.type == "main_frame" || details.type == "sub_frame") {
         console.log(JSON.stringify(details));
+
+        console.log(details.type);
         var counterparty_id;
         var platformtokencontent;
         const h = details.responseHeaders;
@@ -366,6 +391,9 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
 
                         }
 
+                        /* this is the main request the plugin is concerned with:
+                        Request for data. */
+
                     } else if (headerNames.includes("X_HTTP_CYBOTIX_DATA_REQUEST")) {
                         // this is a data request
 
@@ -381,10 +409,10 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
 
                         // Another header is also required, X_HTTP_CYBOTIX_QUERY_REDIRECT, contaning the URL of where to send the response
                         // If this header is not present, the source URL is used. This is not recommended as it may lead to unexpected results.
-
                         var redir_target = details.url;
                         if (headerNames.includes("X_HTTP_CYBOTIX_QUERY_REDIRECT")) {
                             redir_target = getNamedHeader(h, "X_HTTP_CYBOTIX_QUERY_REDIRECT");
+                            console.log("Browsersolutions: using the contents of X_HTTP_CYBOTIX_QUERY_REDIRECT (" + redir_target + ") as the redirect target");
                         }
 
                         const incoming_data_request_message = getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST");
@@ -421,6 +449,7 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
 
                                     try {
                                         var installationUniqueId;
+                                        var token;
                                         chrome.storage.local.get(['installationUniqueId']).then(function (ins) {
                                             installationUniqueId = ins.installationUniqueId;
                                             const event = new Date();
@@ -439,36 +468,87 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                             console.log(response);
                                             // Parse JSON data
                                             return response.json();
-
                                         }).then(function (data) {
                                             console.log(data);
                                             console.log(data.covered);
                                             if (data.covered == "true") {
-                                                console.log("data request is covered by an existing agreement");
+                                                var dataaccesstoken;
+                                                console.log("data request is covered by an existing agreement, create and issue a dataaccess token");
                                                 // fork out of the promise chain here, move to issue the access token
-// call to the create-access-token API
-return fetch(server_url + URI_plugin_user_create_access_token, {
-    method: 'GET',
-    headers: {
-        'Content-Type': 'application/json',
-        [plugin_uuid_header_name]: installationUniqueId,
-        'X_HTTP_CYBOTIX_DATA_REQUEST': getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"),
-        'X_HTTP_CYBOTIX_PLATFORM_TOKEN': getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN")
-    },
-});
+                                                // call to the create-access-token API
+                                                fetch(server_url + URI_plugin_user_create_dataaccess_token, {
+                                                    method: 'GET',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        [plugin_uuid_header_name]: installationUniqueId,
+                                                        'X_HTTP_CYBOTIX_DATA_REQUEST': getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"),
+                                                        'X_HTTP_CYBOTIX_PLATFORM_TOKEN': getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN"),
+                                                        'X_HTTP_CYBOTIX_DATA_RESTRICTIONS': "bnVsbAo="
+                                                    },
+                                                }).then(function (response) {
+                                                    console.log(response);
+                                                    return response.json();
+                                                }).then(function (data) {
+                                                    console.log(data);
+                                                    console.log(data.dataaccesstoken);
+                                                    token = data.dataaccesstoken;
+                                                    // issue a redirect to the target URL, with the token as a parameter
+                                                    // send a messate back to the content script to issue the redirect
+                                                    chrome.scripting
+                                                    .executeScript({
+                                                        target: {
+                                                            tabId: details.tabId,
+                                                            frameIds: [details.frameId]
+                                                        },
+                                                        files: ["senddataaccesstokenscript.js"],
+                                                    });
+                                                }).then(function (response) {
 
+                                                    console.log(response);
 
+                                                    const message = {
+                                                        tabId: details.tabId,
+                                                        frameIds: [details.frameId],
+                                                        type: 'data_access_token',
+                                                        payload: 'Hello from background script to issue a redirect with payload.',
+                                                        newurl: redir_target,
+                                                        headername: "X_HTTP_CYBOTIX_HAVE_PLUGIN",
+                                                        headervalue: "true",
+                                                        token: token,
+                                                        redir_target: redir_target
+
+                                                    };
+                                                    return chrome.tabs.sendMessage(details.tabId, message);
+                                                }).then(function (response) {
+
+                                                    if (chrome.runtime.lastError) {
+                                                        console.error(chrome.runtime.lastError);
+                                                        return;
+                                                    }
+                                                    console.log('Message sent and response received:', response);
+                                                }).then(function (two) {
+                                                    console.log(two);
+
+                                                    // chrome.tabs.sendMessage(details.tabId, message, (response) => {
+                                                    if (chrome.runtime.lastError) {
+                                                        console.error(chrome.runtime.lastError);
+                                                        return;
+                                                    }
+                                                    console.log('Message sent and response received:', response);
+                                                }).catch(function (two) {
+                                                    console.log(two);
+                                                });
                                             } else {
-                                                console.log("data request is not covered by an existing agreement");
-                                                getActiveTab().then(tab => {
-                                                    console.log("Active tab:", tab);
-                                                    activetab_id = tab.id;
-                                                    return executeScriptOnTab(tab.id, 'data_request_prompt.js');
-                                                })
-                                                .then(result => {
-                                                    console.log("Script execution result:", result);
-                                                    // send the token back the page
-                                                    // generates random id;
+                                                // there is no data agreement, prompt the user for one
+                                                chrome.scripting
+                                                .executeScript({
+                                                    target: {
+                                                        tabId: details.tabId
+                                                    },
+                                                    files: ["data_request_prompt.js"],
+                                                }).then(function (response) {
+                                                    console.log(response);
+                                                    var user_prompt_data_request_acceptance_sharedsecret = "1235u6htetb5tb354b35b456";
                                                     let guid = () => {
                                                         let s4 = () => {
                                                             return Math.floor((1 + Math.random()) * 0x10000)
@@ -477,30 +557,35 @@ return fetch(server_url + URI_plugin_user_create_access_token, {
                                                         }
                                                         return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
                                                     }
+                                            
+                                                    // accept this temporarily, but the original message must be stored in the datasbe for later
+                                                    // use when creating the agreement.
+                                                    // The uui is used as a correlation id betwwwn the original request and the one the user eventually agrees to.
 
                                                     const message = {
+                                                        tabId: details.tabId,
                                                         type: 'datarequest',
-                                                        prompt_id: guid(),
-                                                        payload: 'Hello from background script!',
                                                         secret: user_prompt_data_request_acceptance_sharedsecret,
-                                                        complete_req: request_payload,
-                                                        requestdetails: req.requestdetails
-                                                    };
-                                                    console.debug(message);
-                                                    console.debug("activetab_id: " + activetab_id);
-                                                    return chrome.tabs.sendMessage(activetab_id, message);
+                                                        payload: request_payload,
+                                                        original_message: incoming_data_request_message,
+                                                        platformtoken: getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN"),
+                                                        prompt_id: guid()
+                                                             };
+                                                    return chrome.tabs.sendMessage(details.tabId, message);
                                                 }).then(function (response) {
                                                     if (chrome.runtime.lastError) {
                                                         console.error(chrome.runtime.lastError);
                                                         return;
                                                     }
                                                     console.log('Message sent and response received:', response);
+                                                }).catch(function (two) {
+                                                    console.log(two);
                                                 });
 
                                             }
-                                           
-                                       
-                                         });
+
+                                        });
+
                                     } catch (error) {
                                         console.error(error);
                                     }
@@ -545,47 +630,7 @@ return fetch(server_url + URI_plugin_user_create_access_token, {
         }
     }
 
-    // examine the http header for the X_HTTP_CYBOTIX_PLATFORM_TOKEN and if present, verify validity.
-    // if (details.type == "main_frame") {
-    //    console.log(details);
-
-    //  console.log(h);
-    // console.log(JSON.stringify(h));
-    // console.log("X_HTTP_CYBOTIX_PLATFORM_TOKEN: " + getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN"));
-    // console.log("X_HTTP_CYBOTIX_REQUEST_TOKEN: " + getNamedHeader(h, "X_HTTP_CYBOTIX_REQUEST_TOKEN"));
-    const tabId = details.tabId;
-    console.log("DEBUG, tabId: " + tabId);
-    const frameId = details.frameId;
-    console.log("DEBUG, frameId: " + frameId);
-    // const entityid = getValidPlatformToken(details.responseHeaders);
-    // console.log("DEBUG, entityid: " + entityid);
-    // if (entityid && entityid != null && entityid != "") {
-
-    chrome.tabs.query({}, (tabs) => {
-        for (let tab of tabs) {
-            if (tab.url === details.url) {
-                console.log(`Found tab with ID: ${tab.id} and URL: ${tab.url}`);
-                // send the token back the page
-                const message = {
-                    type: 'greeting',
-                    payload: 'Hello from background script!'
-                };
-
-                chrome.tabs.sendMessage(tab.id, message, (response) => {
-                    if (chrome.runtime.lastError) {
-                        console.error(chrome.runtime.lastError);
-                        return;
-                    }
-                    console.log('Message sent and response received:', response);
-                });
-
-                //break;
-            }
-        }
-    });
-    // put the token in the local storage with the URL as the key
-    // }
-    //}
+  
 }, {
     urls: ["<all_urls>"],
     types: ["main_frame", "sub_frame"]
@@ -613,21 +658,32 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             payload: "Hello from background script!"
         });
     } else if (message.type == "accept_single_datarequest") {
+
         console.log("Received message from content script:", message);
         console.log(message.agreement_details);
         console.log("Received message from content script:", sender);
         // create agreement in database
+        console.log(message.agreement_details.original_message);
+
+        console.log(base642str(message.agreement_details.original_message));
+        console.log(JSON.parse(base642str(message.agreement_details.original_message)));
+        console.log((JSON.parse(base642str(message.agreement_details.original_message))).requests);
 
         // include the original agreement request
-
+// lookup values from the platform token
+//console.log(details);
+var data_grants = JSON.stringify((JSON.parse(base642str(message.agreement_details.original_message))).requests);
+console.log(data_grants);
         var agreement = {
             principal_name: "2342",
             principal_id: "2342",
             counterparty_name: "Web Shop Inc.",
             counterparty_id: "65232",
+            platformtoken: message.agreement_details.platformtoken,
+            data_grants: data_grants,
             notebefore: message.agreement_details.notebefore,
             notafter: message.agreement_details.notafter,
-            original_request: message.agreement_details.original_request
+            original_request: message.agreement_details.original_message
         };
 
         // store the agreement in the database
@@ -658,10 +714,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
         }).then(function (response) {
             console.log(response);
+            
             // Check for errors
+            try{
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+         }catch(err){
+                console.log(err);
+         }
+
+            sendResponse({
+                type: "acknowledgment",
+                payload: "ack from background script"
+            });
 
         });
 

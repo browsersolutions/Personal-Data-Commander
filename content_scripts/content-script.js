@@ -40,7 +40,7 @@ const newDiv = document.createElement("div");
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Check the type of message (you can define your own types)
     //console.log(JSON.stringify(message));
-    //console.log(message.type);
+    console.log(message.type);
     
     if (message.type === 'platformtoken') {
 
@@ -71,75 +71,48 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
      
     
     
-}
+}else if (message.type === 'dataaccesstoken') {
+    console.log(JSON.stringify(message));
 
+    var url = message.redir_target;
+
+// trigger a redirect to the remote website
+
+// Fetch content from a URL
+fetch('http://localhost:3000/generate_platform_token_from_key_form.html')
+.then(response => {
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    return response.text();
+})
+.then(data => {
+    // Load the fetched content into the iframe
+    iframe.contentWindow.document.open();
+    iframe.contentWindow.document.write(data);
+    iframe.contentWindow.document.close();
+})
+.catch(error => {
+    console.error('Fetch error:', error);
+});
+
+
+  //  return fetch(url, {
+  //      method: 'GET',
+  //      headers: {
+  //          X_HTTP_CYBOTIX_DATA_ACCESSTOKEN: message.dataaccesstoken
+  //      },
+  //  }).then(function (response) {
+  //      console.log(response.status);
+  //      console.log(response);
+  //  });
+
+
+}
 
   });
   
 
-  function accept_request(event, uuid) {
-    console.debug("accept_request ");
-    console.debug(event);
-    console.debug(uuid);
-    console.debug(event.target);
-
-    let root_node = findAncestorByAttributeValue(event.target, 'type', 'datarequestnote');
-    console.debug(root_node);
-    if (root_node) {
-        console.log('Found node:', root_node);
-    } else {
-        console.log('Node with the specified attribute value was not found.');
-    }
-console.debug(root_node);
-    try {
-       
-        // assemble the request (including possible modification from the user)
-        var selection_text = root_node.querySelectorAll('input[name="selection_text"]')[0].textContent.trim();
-        console.debug("selection_text: " + selection_text);
-      
-        var original_request = root_node.querySelectorAll('input[name="original_request"]')[0].textContent.trim();
-        console.debug("original_request: " + original_request);
-
-        // collect remarks from the user
-var notes = "";
-
-var message = {
-    type: "accept_single_datarequest",
-    agreement_details: {
-        original_request: JSON.parse(original_request),
-        notes: notes,
-        uuid: uuid,
-        notbefore:"2021-12-31 23:59:59",
-        notafter:"2023-12-31 23:59:59"
-    }
-};
-console.debug(message);
-        // send save request back to background
-        chrome.runtime.sendMessage(
-           message
-        , function (response) {
-            console.debug("message sent to backgroup.js with response: " + JSON.stringify(response));
-            // finally, call "close" on the note
-            //  try{
-             
-                 try {
-
-                        console.debug("closing...");
-                        console.debug(root_node);
-                        root_node.remove();
-            
-                } catch (e) {
-                    console.error(e);
-                }
-            //  }catch(g){console.debug(g);}
-
-        });
-       
-        
-    } catch (e) {
-        console.error(e);
-    }
-}
 
 
 
