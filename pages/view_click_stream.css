@@ -34,8 +34,12 @@
   #dataTable td:first-child {
     display: none;
   }
-
- 
+  #dataTable th:last-child {
+    cursor: default;
+  }
+  #dataTable th:last-child::before {
+    display: none;
+  }
 
 
 
@@ -64,8 +68,25 @@
     text-transform: uppercase;
     background-color: #4CAF50;
     color: white;
+    position: relative;
+    cursor: pointer;
+    padding-right: 20px;
   }
-
+  .fixed-header th::before,
+  .fixed-header-ascending th::before {
+    content: " ";
+    position: absolute;
+    left: 60%;
+    top: 8px;
+    background: url(../icons/sort-arrow-down.png) no-repeat;
+    background-size: contain;
+    width: 9px;
+    height: 9px;
+  }
+  .fixed-header-ascending th::before {
+    background: url(../icons/sort-arrow-up.png) no-repeat;
+    background-size: contain;
+  }
   table td {
     font-size: .6em;
     color: #388E3C;
