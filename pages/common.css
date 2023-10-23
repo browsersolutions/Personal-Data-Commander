@@ -75,7 +75,7 @@ a {
 
 .container-fluid {
   padding: 15px;
-  height: 100vh;
+  /* height: 100vh; */
   overflow-y: auto;
 }
 
