@@ -103,15 +103,14 @@ async function fetchData() {
             const anchor = document.createElement('a');
 
             // Set the anchor's text and href attributes
-            anchor.href = row.url; // Replace with your desired URL
+            anchor.href = row.url; 
             anchor.target = '_blank'
             anchor.title = row.url;
             if (row.url.length > 100) {
-                // Trim the string to 30 characters and add ellipses
+                // Trim the string to 100 characters and add ellipses
                 anchor.textContent = row.url.slice(0, 100) + '...';
             } else {
                 anchor.textContent = row.url;
-
             }
             // Append the anchor to the cell
             cell3.appendChild(anchor);
