@@ -235,7 +235,7 @@ a {
   animation: shake 0.5s;
 
   /* When the animation is finished, start again */
-  animation-iteration-count: infinite;
+  animation-iteration-count: initial;
 }
 
 @keyframes shake {
@@ -650,7 +650,9 @@ a {
 .d-block {
   display: block;
 }
-
+.mb-2 {
+  margin-bottom: 10px;
+}
 .mb-3 {
   margin-bottom: 15px;
 }
@@ -661,6 +663,43 @@ a {
 
 .position-relative {
   position: relative;
+}
+/* offers page------------ */
+.offersList {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -2%;
+  justify-content: center;
+}
+.offersList li{
+  background: #fff;
+  width: 30%;
+  margin: 0 0 3% 2%;
+  color: #000;
+  font-size: 14px;
+  border-radius: 0 0 10px 10px;
+}
+.offersList li .imgBox {
+  margin-bottom: 20px;
+}
+.offersList li img {
+  width: 100%;
+}
+.offersList .textBox {
+  margin: 0 15px 15px;
+}
+.offersList h2 {
+  margin: 0 0 10px;
+  font-weight: 400;
+  font-size: 18px;
+}
+.offersList p {
+  margin: 0 0 15px;
+  font-size: 13px;
+  line-height: 20px;
+}
+.offersList a {
+  color: #ff5400;
 }
 
 /* media query start here----------*/
