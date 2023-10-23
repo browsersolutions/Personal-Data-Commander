@@ -12,53 +12,173 @@
 </head>
 
 <body>
-  <!-- start of page header -->
-<table>
-  <tbody>
-    <tr>
-      <td><a href="view_click_stream.html">View Click Stream</a></td>
-      <td><a href="do_not_capture_list.html">Do-not-capture list</a></td>
-      <td><a href="view_data_agreements.html">View Data Agreements</a></td>
-  
-  </tr>
-  </tbody>
-</table>
+  <div class="wrapper">
+    <div class="container-fluid">
+      <div class="headerWrap">
+        <ul class="loginList d-none">
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Login In</a></li>
+            <li><a href="#">Sign Up</a></li>
+        </ul>
+        <ul class="userList">
+          <li><a href="signup.html" class="profileBox"><img src="../icons/userIcon.png"></a></li>
+        </ul>
+      </div>
+      <!-- start of page header -->
+      <!-- side bar -->
+      <aside class="sidebarWrap" >
+        <div class="sidebarBox"  id="mySidenav">
+          <span class="logoBox"></span>
+          <span class="sidebar-collapser"></span>
+          <ul class="sidebarMenuList">
+            <li class="menu-item">
+              <a href="#">
+                <span class="menu-icon">
+                  <i class="mailIcon"></i>
+                </span>
+                <span class="menu-title">Index</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#">
+                <span class="menu-icon">
+                  <i class="historyIcon"></i>
+                </span>
+                <span class="menu-title">history</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#" class="active">
+                <span class="menu-icon">
+                  <i class="analyseIcon"></i>
+                </span>
+                <span class="menu-title">Analyse</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#">
+                <span class="menu-icon">
+                  <i class="ofersIcon"></i>
+                </span>
+                <span class="menu-title">Ofers</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#">
+                <span class="menu-icon">
+                  <i class="criditsIcon"></i>
+                </span>
+                <span class="menu-title">Cridits</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#">
+                <span class="menu-icon">
+                  <i class="updatesIcon"></i>
+                </span>
+                <span class="menu-title">Updates</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#">
+                <span class="menu-icon">
+                  <i class="promosIcon"></i>
+                </span>
+                <span class="menu-title">Promos</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#">
+                <span class="menu-icon">
+                  <i class="purchasesIcon"></i>
+                </span>
+                <span class="menu-title">Purchases</span>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="#">
+                <span class="menu-icon">
+                  <i class="sociaisIcon"></i>
+                </span>
+                <span class="menu-title">Sociais</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </aside>
+      <!-- side bar end here -->
+      <!-- tab content start here -->
+      <div class="container">
+        <div class="searchWrap">
+          <input type="text" class="inputField" id="filterContent" placeholder="Filter Content" ">
+          <span class="searchIcon"></span>
+        </div>
+        <div class="d-flex justify-content-end">
+          <button id="clickHistoryRefreshButton" class="refreshBtn">Refresh</button>
+          <button id="clickHistoryRefreshButton" class="deleteBtn">Delete All</button>
+        </div>
+        
+        <!-- tabs wrapper -->
+        <div class="tabsWrap">
+          <ul class="navTabs">
+            <li class="navItem">
+              <a class="navLink active" href="view_click_stream.html">View Click Stream</a>
+            </li>
+            <li class="navItem">
+              <a class="navLink" href="view_data_agreements.html">View Data Agreements</a>
+            </li>
+          </ul>
+          <div class=" tabContent scrollable-table">
+            <div class="tableResponsive">
+            <table id="dataTable">
+              <thead>
+                <tr class="fixed-header">
+                    <th>ID</th>
+                  <!-- <th class="sortableCol" >universaltime</th> -->
+                  <th class="sortableCol" >localtime</th>
+                  <th class="sortableCol" >URL</th>
+                  <th>action</th>
+          
+                </tr>
+                <!-- Add a filter row -->
+                <!-- <tr class="fixed-header">
+                  <th class="filterableCol"></th> <!//-- Empty cell --//>
+                  <th class="filterableCol">filter:<input type="text" id="filterContent" placeholder="Filter Content" "></th>
+                  <th class="filterableCol"><input type="text" id="filterContent" placeholder="Filter Content" "></th>
+                  <th class="filterableCol"><input type="text" id="filterContent" placeholder="Filter Content" "></th>
+                  <th class="filterableCol"></th>
+              
+                </tr> -->
+              </thead>
+              <tbody>
+                <!-- Rows will be added here -->
+              </tbody>
+            </table>
+          </div>
+          </div>
+        </div>
+        <!-- tabs wrapper end -->
+        <!-- <table>
+          <tbody>
+            <tr>
+              <td><a href="view_click_stream.html">View Click Stream</a></td>
+              <td><a href="do_not_capture_list.html">Do-not-capture list</a></td>
+              <td><a href="view_data_agreements.html">View Data Agreements</a></td>
+              <td class="td-green-courier"><a href="first-page.html" class="link-inherit-color">first demo page</a></td>
+          </tr>
+          </tbody>
+        </table> -->
 
-<!-- end of pager header -->
+      <!-- end of pager header -->
+      <!-- Empty table structure -->
 
-    <div>
-        This is an overview of your click history
-    </div>
-    <button id="clickHistoryRefreshButton">refresh</button>
-<!-- Empty table structure -->
-<div class="scrollable-table">
-<table id="dataTable">
-  <thead>
-    <tr class="fixed-header">
-        <th>ID</th>
-      <th class="sortableCol" >universaltime</th>
-      <th class="sortableCol" >localtime</th>
-      <th class="sortableCol" >URL</th>
-      <th>action</th>
 
-    </tr>
-    <!-- Add a filter row -->
-    <tr class="fixed-header">
-      <th class="filterableCol"></th> <!-- Empty cell -->
-      <th class="filterableCol">filter:<input type="text" id="filterContent" placeholder="Filter Content" "></th>
-      <th class="filterableCol"><input type="text" id="filterContent" placeholder="Filter Content" "></th>
-      <th class="filterableCol"><input type="text" id="filterContent" placeholder="Filter Content" "></th>
-      <th class="filterableCol"></th>
-   
-    </tr>
-  </thead>
-  <tbody>
-    <!-- Rows will be added here -->
-  </tbody>
-</table>
-<hr/>
+
+      </div>
+  </div>
 </div>
     <script src="./view_click_stream_script.js"></script>
+    <script src="./sidebar.js"></script>
 </body>
 
 </html>
