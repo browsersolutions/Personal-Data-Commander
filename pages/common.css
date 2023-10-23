@@ -1,13 +1,11 @@
-html,
-ul,
-li {
+html {
   margin: 0;
   padding: 0;
   height: 100%;
 }
 
 body {
-  width: 100vw;
+  width: 100dvw;
   height: 100%;
   display: block;
   font-family: sans-serif;
@@ -23,11 +21,12 @@ body {
   padding: 0;
   margin: 0;
 }
-
 ul,
 li {
   list-style-type: none;
   height: auto;
+  margin: 0;
+  padding: 0;
 }
 
 .d-none {
@@ -75,7 +74,7 @@ a {
 
 .container-fluid {
   padding: 15px;
-  /* height: 100vh; */
+  height: 100dvh;
   overflow-y: auto;
 }
 
@@ -488,6 +487,7 @@ a {
   border-top: 0;
   padding: 25px 20px;
   border-radius: 0 10px 10px 10px;
+  margin-bottom: 30px;
 }
 
 .tableResponsive {
@@ -674,12 +674,14 @@ a {
   justify-content: center;
 }
 .offersList li{
-  background: #fff;
+  background: #f9f9f9;
   width: 30%;
   margin: 0 0 3% 2%;
   color: #000;
   font-size: 14px;
+  box-shadow: 0 0px 5px 1px rgba(0,0,0,.1);
   border-radius: 0 0 10px 10px;
+  height: 100%;
 }
 .offersList li .imgBox {
   margin-bottom: 20px;
@@ -689,6 +691,8 @@ a {
 }
 .offersList .textBox {
   margin: 0 15px 15px;
+  min-height: 260px;
+  position: relative;
 }
 .offersList h2 {
   margin: 0 0 10px;
@@ -702,12 +706,22 @@ a {
 }
 .offersList a {
   color: #ff5400;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 /* media query start here----------*/
 @media (min-width: 768px) and (max-width: 1024px) {
+  .container-fluid {
+    height: auto;
+  }
   .container {
     width: 75%;
     margin-left: 15%;
+  }
+  .offersList .textBox {
+    min-height: 385px;
   }
 }
