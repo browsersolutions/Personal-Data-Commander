@@ -194,12 +194,14 @@ const sortStates = {
 
 function sortTa() {
 
-    sortTable(event.target.getAttribute("colindex"));
+    sortTable(event.target);
 }
 
 // Function to sort the table
-function sortTable(columnIndex) {
+function sortTable(colheader) {
+    const columnIndex = colheader.getAttribute("colindex");
     console.log("sortable: " + columnIndex)
+    colheader.classList.toggle('fixed-header-ascending')
     const table = document.getElementById('dataTable');
 
     let rows = Array.from(table.rows).slice(1); // Ignore the header

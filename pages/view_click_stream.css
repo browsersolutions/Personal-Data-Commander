@@ -72,8 +72,8 @@
     cursor: pointer;
     padding-right: 20px;
   }
-  .fixed-header th::before,
-  .fixed-header-ascending th::before {
+  th.sortableCol::before,
+  th.fixed-header-ascending::before {
     content: " ";
     position: absolute;
     left: 60%;
@@ -83,7 +83,7 @@
     width: 9px;
     height: 9px;
   }
-  .fixed-header-ascending th::before {
+  th.fixed-header-ascending::before {
     background: url(../icons/sort-arrow-up.png) no-repeat;
     background-size: contain;
   }
