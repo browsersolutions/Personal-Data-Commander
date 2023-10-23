@@ -131,6 +131,9 @@ a{
     padding: 15px 0;
     border-radius: 10px;
   }
+  .sidebarBox.active {
+    width: 160px;
+  }
   .sidebar-collapser {
     transition: left, right, 0.3s;
     position: absolute;

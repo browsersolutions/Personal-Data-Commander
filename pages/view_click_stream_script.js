@@ -93,14 +93,14 @@ console.debug(response);
             const cell1 = newRow.insertCell(0);
             const cell2 = newRow.insertCell(1);
             const cell3 = newRow.insertCell(2);
-            const cell4 = newRow.insertCell(3);
+            // const cell4 = newRow.insertCell(3);
 
             cell1.textContent = row.uuid;
             cell1.setAttribute("name", "uuid")
             cell2.textContent = row.utc;
 
-            cell3.textContent = row.localtime;
-            cell4.textContent = row.url;
+            cell3.textContent = row.url;
+            // cell4.textContent = row.url;
 
             // Add delete button
             const deleteButton = document.createElement('button');
@@ -119,12 +119,12 @@ console.debug(response);
                 deleteDataRow(row.uuid);
 
             };
-            const cell5 = newRow.insertCell(4);
-            cell5.appendChild(deleteButton);
+            const cell4 = newRow.insertCell(3);
+            cell4.appendChild(deleteButton);
 
             // Adding data-label for mobile responsive
             cell1.setAttribute('data-label', 'UTC');
-            cell2.setAttribute('data-label', 'localtime');
+            // cell2.setAttribute('data-label', 'localtime');
             cell2.setAttribute('data-label', 'url');
 
         });
@@ -148,20 +148,29 @@ for (var i = 0; i < buttons.length; i++) {
 
 }
 
-// Locate all cells that are used for filtering of search results
-const f_cells = document.querySelectorAll('.filterableCol');
-console.log(f_cells);
-len = f_cells.length;
-for (var i = 0; i < f_cells.length; i++) {
-    //work with regexp in cell
-    console.log(f_cells[i]);
-    // set column index number for each column
-    f_cells[i].setAttribute("colindex", i);
-    f_cells[i].addEventListener('input', function (event) {
-        filterTable_a();
-    }, false);
 
-}
+// Locate all cells that are used for filtering of search results
+const f_cells = document.querySelectorAll('.inputField');
+console.log(f_cells);
+
+//below code to get input action for gobal search
+f_cells[0].addEventListener('input', function (event) {
+    filterTable_a();
+}, false);
+
+//below code is for get action by column
+// len = f_cells.length;
+// for (var i = 0; i < f_cells.length; i++) {
+//     //work with regexp in cell
+//     console.log(f_cells[i]);
+//     // set column index number for each column
+//     f_cells[i].setAttribute("colindex", i);
+//     console.log('1010',i);
+    // f_cells[i].addEventListener('input', function (event) {
+    //     filterTable_a();
+    // }, false);
+
+// }
 
 // Sort states for each column
 const sortStates = {
@@ -221,7 +230,7 @@ function filterTable_a() {
 }
 
 function filterTable(colheader) {
-    const columnIndex = colheader.parentNode.getAttribute("colindex");
+    const columnIndex = 2;
     //console.log(colheader);
     console.log("filter on col: " + columnIndex)
     //const input = colheader;
@@ -236,6 +245,7 @@ function filterTable(colheader) {
         //console.log(cell);
         if (cell) {
             const content = cell.innerText || cell.textContent;
+            console.log(content);
             if (new RegExp(filter, 'i').test(content)) {
                 //        console.log("not sho");
                 rows[i].style.display = '';

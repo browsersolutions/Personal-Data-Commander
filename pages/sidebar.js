@@ -1,4 +1,5 @@
-// $(".sidebar-collapser").click(function(){
-//   $(".sidebarBox").toggleClass("hide");
-//   $("i").toggleClass("active");
-// });
+const sidebarBtn = document.querySelector(".sidebar-collapser")
+const sidebar = document.querySelector(".sidebarBox");
+sidebarBtn.addEventListener('click', function(){
+ sidebar.classList.toggle('active');
+})
