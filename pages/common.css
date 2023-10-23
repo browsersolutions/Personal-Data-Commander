@@ -1,195 +1,226 @@
 html,
-ul,li {
+ul,
+li {
   margin: 0;
   padding: 0;
   height: 100%;
 }
+
 body {
-    width: 100vw;
-    height: 100%;
-    display: block;
-    font-family: sans-serif;
-    /* flex-direction: column;
+  width: 100vw;
+  height: 100%;
+  display: block;
+  font-family: sans-serif;
+  /* flex-direction: column;
     justify-content: center;
     align-items: center; 
     */
-    overflow: hidden;
-    color: white;
-    font-size: 20px;
-    background: rgb(230,230,230);
-    background: radial-gradient(circle, rgba(230,230,230,1) 0%, rgba(230,230,230,1) 35%, rgba(209,208,208,1) 50%, rgba(143,142,142,1) 100%);   
-    padding: 0;
-    margin: 0;
+  overflow: hidden;
+  color: white;
+  font-size: 20px;
+  background: rgb(230, 230, 230);
+  background: radial-gradient(circle, rgba(230, 230, 230, 1) 0%, rgba(230, 230, 230, 1) 35%, rgba(209, 208, 208, 1) 50%, rgba(143, 142, 142, 1) 100%);
+  padding: 0;
+  margin: 0;
 }
-ul,li{
+
+ul,
+li {
   list-style-type: none;
   height: auto;
 }
+
 .d-none {
   display: none !important;
 }
-a{
+
+a {
   text-decoration: none;
 }
+
 /* Style for the table */
 .table-no-border {
-    border: none;
-  }
-  
-  /* Style for table data */
-  .td-green-courier {
-    color: green;
-    font-family: "Courier New", Courier, monospace;
-    font-size: 10px;
-  }
-  .text-center {
-    text-align: center;
-  }
-  /* Style for anchor links */
-  .link-inherit-color {
-    color: inherit; /* Inherit color from parent */
-    text-decoration: none;
-  }
-  .refreshBtn {
-    background: #036c33;
-    color: #fff;
-    box-shadow: 0;
-    border: 0;
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-    margin: 0 10px;
-    display: block;
-  }
-  .container-fluid {
-    padding: 15px;
-    height: 100vh;
-  }
-  .loginList,
-  .userList {
-    display: flex;
-    margin-right: auto;
-    justify-content: end;
-  }
-  .loginList a {
-    display: block;
-    font-size: 13px;
-    line-height: 20px;
-    color: #036c33;
-    text-decoration: none;
-    padding: 0 15px;
-  }
-  .loginList a:hover,
-  .loginList a.active {
-    background: #036c32;
-    color: #fff;
-    border-radius: 5px;
-  }
-  .logoBox {
-    background: url(../icons/logoIcon.png) no-repeat;
-    width: 50px;
-    height: 65px;
-    margin: 0 auto;
-    display: block;
-    background-size: contain;
-  }
-  .profileBox {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: block;
-  }
-  .profileBox img {
-    width: 100%;
-    border-radius: 100%;
-  }
-  .loaderBox {
-    background: url(../icons/loader.png) no-repeat center;
-    background-size: contain;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    width: 35%;
-    height: 350px;
-  }
-  /* Side bar----------- */
-  .sidebarWrap {
-    position: fixed;
-    top: 70px;
-    left: 20px;
-    width: 70px;
-    min-width: 70px;
-  }
-  .sidebarBox {
-    height: auto;
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    background-image: linear-gradient(to bottom, #1b9047, #158742, #107e3c, #097537, #036c32);
-    z-index: 2;
-    padding: 15px 0;
-    border-radius: 10px;
-  }
-  .sidebarBox.active {
-    transition: left, right, 0.3s;
-    width: 160px;
-  }
-  .sidebar-collapser {
-    position: absolute;
-    left: 48px;
-    top: 55px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: #1b9047;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-align: center;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2em;
-    transform: translateX(50%);
-    z-index: 111;
-    cursor: pointer;
-    color: white;
-    box-shadow: 1px 1px 4px #0c1e35;
+  border: none;
 }
+
+/* Style for table data */
+.td-green-courier {
+  color: green;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Style for anchor links */
+.link-inherit-color {
+  color: inherit;
+  /* Inherit color from parent */
+  text-decoration: none;
+}
+
+.refreshBtn {
+  background: #036c33;
+  color: #fff;
+  box-shadow: 0;
+  border: 0;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin: 0 10px;
+  display: block;
+}
+
+.container-fluid {
+  padding: 15px;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.loginList,
+.userList {
+  display: flex;
+  margin-right: auto;
+  justify-content: end;
+}
+
+.loginList a {
+  display: block;
+  font-size: 13px;
+  line-height: 20px;
+  color: #036c33;
+  text-decoration: none;
+  padding: 0 15px;
+}
+
+.loginList a:hover,
+.loginList a.active {
+  background: #036c32;
+  color: #fff;
+  border-radius: 5px;
+}
+
+.logoBox {
+  background: url(../icons/logoIcon.png) no-repeat;
+  width: 50px;
+  height: 65px;
+  margin: 0 auto;
+  display: block;
+  background-size: contain;
+}
+
+.profileBox {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: block;
+}
+
+.profileBox img {
+  width: 100%;
+  border-radius: 100%;
+}
+
+.loaderBox {
+  background: url(../icons/loader.png) no-repeat center;
+  background-size: contain;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  width: 35%;
+  height: 350px;
+}
+
+/* Side bar----------- */
+.sidebarWrap {
+  position: fixed;
+  top: 70px;
+  left: 20px;
+  width: 70px;
+  min-width: 70px;
+  z-index: 2;
+}
+
+.sidebarBox {
+  height: auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-image: linear-gradient(to bottom, #1b9047, #158742, #107e3c, #097537, #036c32);
+  z-index: 2;
+  padding: 15px 0;
+  border-radius: 10px;
+}
+
+.sidebarBox.active {
+  transition: left, right, 0.3s;
+  width: 160px;
+}
+
+.sidebar-collapser {
+  position: absolute;
+  left: 48px;
+  top: 55px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #1b9047;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  transform: translateX(50%);
+  z-index: 111;
+  cursor: pointer;
+  color: white;
+  box-shadow: 1px 1px 4px #0c1e35;
+}
+
 .sidebarBox.active .sidebar-collapser {
   transition: left, right, 0.3s;
   left: 140px;
 }
-  .sidebarMenuList a {
-    display: flex;
-    align-items: center;
-    height: 40px;
-    padding: 0 15px 0 10px;
-    margin: 0 0 10px 10px;
-    color: #fff;
-    text-decoration: none;
-  }  
-  .sidebarMenuList a:hover,
-  .sidebarMenuList a.active {
-    background: #ababab;
-    border-radius: 10px 0 0 10px;
-  }
-  .sidebarMenuList {
-    overflow-y: auto;
-    height: 300px;
-    display: flex;
-    flex-direction: column;
-  }
-  .sidebarMenuList .menu-icon {
-    font-size: 1.2rem;
-    width: 35px;
-    min-width: 35px;
-    height: 26px;
-    line-height: 35px;
-    text-align: center;
-    display: inline-block;
-    margin-right: 8px;
+
+.sidebarMenuList a {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 15px 0 10px;
+  margin: 0 0 10px 10px;
+  color: #fff;
+  text-decoration: none;
 }
+
+.sidebarMenuList a:hover,
+.sidebarMenuList a.active {
+  background: #ababab;
+  border-radius: 10px 0 0 10px;
+}
+
+.sidebarMenuList {
+  overflow-y: auto;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarMenuList .menu-icon {
+  font-size: 1.2rem;
+  width: 35px;
+  min-width: 35px;
+  height: 26px;
+  line-height: 35px;
+  text-align: center;
+  display: inline-block;
+  margin-right: 8px;
+}
+
 .sidebarMenuList .menu-title {
   font-size: 0.7em;
   overflow: hidden;
@@ -198,6 +229,7 @@ a{
   flex-grow: 1;
   transition: color 0.3s;
 }
+
 .sidebarMenuList a:hover .menu-icon i {
   /* animation: swing ease-in-out 0.5s 1 alternate; */
   animation: shake 0.5s;
@@ -205,16 +237,33 @@ a{
   /* When the animation is finished, start again */
   animation-iteration-count: infinite;
 }
+
 @keyframes shake {
-  0% { transform: translateX(0) }
-  25% { transform: translateX(5px) }
-  50% { transform: translateX(-5px) }
-  75% { transform: translateX(5px) }
-  100% { transform: translateX(0) }
+  0% {
+    transform: translateX(0)
+  }
+
+  25% {
+    transform: translateX(5px)
+  }
+
+  50% {
+    transform: translateX(-5px)
+  }
+
+  75% {
+    transform: translateX(5px)
+  }
+
+  100% {
+    transform: translateX(0)
+  }
 }
+
 .sidebarMenuList a:hover .menu-title {
   color: #dee2ec;
 }
+
 .mailIcon,
 .historyIcon,
 .analyseIcon,
@@ -231,67 +280,85 @@ a{
   display: inline-block;
   background-position: 0 3px;
 }
+
 .historyIcon {
   background-position: 0 -36px;
 }
+
 .analyseIcon {
   background-position: 0 -78px;
 }
+
 .ofersIcon {
   background-position: 0 -117px;
 }
+
 .criditsIcon {
   background-position: 0 -157px;
 }
+
 .updatesIcon {
   background-position: 0 -196px;
 }
+
 .promosIcon {
   background-position: 0 -242px;
 }
+
 .purchasesIcon {
   background-position: 0 -284px;
 }
+
 .sociaisIcon {
   background-position: 0 -329px;
 }
+
 .sidebarMenuList a:hover .mailIcon,
 .sidebarMenuList a.active .mailIcon,
 .signupBox .emailIcon {
   background-position: -40px 3px;
 }
+
 .sidebarMenuList a:hover .historyIcon,
 .sidebarMenuList a.active .purchasesIcon {
   background-position: -40px -36px;
 }
+
 .sidebarMenuList a:hover .analyseIcon,
 .sidebarMenuList a.active .analyseIcon {
   background-position: -40px -78px;
 }
+
 .sidebarMenuList a:hover .ofersIcon,
 .sidebarMenuList a.active .ofersIcon {
   background-position: -40px -117px;
 }
+
 .sidebarMenuList a:hover .criditsIcon,
 .sidebarMenuList a.active .criditsIcon {
   background-position: -40px -157px;
 }
+
 .sidebarMenuList a:hover .updatesIcon,
 .sidebarMenuList a.active .updatesIcon {
   background-position: -40px -196px;
 }
+
 .sidebarMenuList a:hover .promosIcon,
 .sidebarMenuList a.active .promosIcon {
   background-position: -40px -242px;
 }
+
 .sidebarMenuList a:hover .purchasesIcon,
 .sidebarMenuList a.active .purchasesIcon {
   background-position: -40px -284px;
 }
+
 .sidebarMenuList a:hover .sociaisIcon,
 .sidebarMenuList a.active .sociaisIcon {
   background-position: -40px -329px;
 }
+
 .deleteBtn {
   background: rgb(196, 6, 6);
   color: #fff;
@@ -300,11 +367,13 @@ a{
   padding: 3px 10px;
   cursor: pointer;
 }
+
 .orText {
   font-size: 12px;
   color: #036c32;
   margin-bottom: 20px;
 }
+
 .orText::after {
   content: '';
   position: absolute;
@@ -315,29 +384,31 @@ a{
   left: 0;
   right: 0;
 }
+
 .orText span {
   background: #dbdbdb;
   padding: 0 3px;
   position: relative;
   z-index: 1;
 }
+
 ::-webkit-scrollbar {
   width: 5px;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #62cf92; 
+  background: #62cf92;
 }
- 
+
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #0c8b45; 
+  background: #0c8b45;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #0c8b45; 
+  background: #0c8b45;
 }
 
 /* tab content start here */
@@ -345,10 +416,12 @@ a{
   width: 80%;
   margin-left: 10%;
 }
+
 .searchWrap {
   position: relative;
   margin-bottom: 25px;
 }
+
 .inputField {
   width: 40%;
   border-radius: 10px;
@@ -358,12 +431,14 @@ a{
   border: 1px solid #158742;
   font-size: 14px;
   color: #000;
-  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
+
 .inputField:focus {
   border: 1px solid #158742;
   outline: none;
 }
+
 .searchIcon {
   background: url(../icons/search-icon.png) no-repeat;
   background-size: contain;
@@ -373,6 +448,7 @@ a{
   left: 15px;
   top: 10px;
 }
+
 /* navTabs--- */
 .navTabs {
   display: flex;
@@ -383,24 +459,27 @@ a{
   border-bottom: 1px solid #2fb383;
   border-top-right-radius: 10px;
 }
+
 .navLink {
   display: block;
   padding: 20px 16px;
   background: #c9c9c9;
   border: 1px solid transparent;
-  border-bottom:1px solid #2fb383;
+  border-bottom: 1px solid #2fb383;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   color: #036c32;
   font-size: 14px;
   margin-bottom: -1px;
 }
+
 .navLink:hover,
 .navLink.active {
   background: #e4e4e4;
   color: #036c32;
   border-color: #2fb383 #2fb383 #e4e4e4;
 }
+
 .tabContent {
   background: #e4e4e4;
   border: 1px solid #2fb383;
@@ -408,26 +487,32 @@ a{
   padding: 25px 20px;
   border-radius: 0 10px 10px 10px;
 }
+
 .tableResponsive {
-  height: 350px;
+  height: 100%;
   overflow-y: auto;
 }
+
 .d-flex {
   display: flex;
 }
+
 .justify-content-end {
   justify-content: end;
 }
+
 .justify-content-between {
   justify-content: space-between;
 }
+
 /* signup------------ */
 .signupWrap {
   width: 90%;
   margin: 40px auto;
-  height: 450px;
+  height: 100vh;
   overflow-y: auto;
 }
+
 .signupBox {
   background: #dbdbdb;
   width: 50%;
@@ -435,26 +520,31 @@ a{
   padding: 25px;
   height: 100vh;
 }
+
 .signupBox .logo {
   background: url(../icons/green-icon.png) no-repeat;
   width: 82px;
   height: 62px;
   display: block;
 }
+
 .signupBox .profileBox {
   width: 100px;
   height: 100px;
   margin: 0 auto 20px;
 }
+
 .profileBox img {
   width: 100%;
   border-radius: 100%;
 }
+
 .signupBox form {
   width: 65%;
   display: block;
   margin: 0 auto;
 }
+
 .signupBox .inputField {
   background: transparent;
   width: 84%;
@@ -465,41 +555,49 @@ a{
   margin-bottom: 15px;
   color: #036c32;
 }
+
 .signupBox .emailIcon,
 .passwordIcon {
   position: absolute;
   left: 0;
   top: 7px;
 }
+
 .passwordIcon {
   background: url(../icons/password-icon.png) no-repeat;
   width: 22px;
   height: 29px;
 }
+
 .signupBox .form-check {
   margin: 0;
   padding: 0;
   line-height: 0;
 }
+
 .signupBox .form-check-input {
   margin: 0;
   padding: 0;
   vertical-align: text-bottom;
 
 }
+
 .alreadySingText {
   color: #b0b0b0;
   font-size: 12px;
 }
+
 .signupBox .form-check-label,
 .forgotLink {
   font-size: 10px;
   color: #036c33;
 }
+
 .pluginLink {
   font-size: 16px;
   color: #036c32;
 }
+
 .loginBtn,
 .signUpBtn {
   width: 200px;
@@ -512,15 +610,18 @@ a{
   display: block;
   cursor: pointer;
 }
+
 .signUpBtn {
   background: transparent;
   color: #036c32;
   border: 1px solid #036c32;
 }
+
 .signUpBtn:hover {
   background: #036c32;
   color: #fff;
 }
+
 .downlodIcon {
   background: url(../icons/download-icon.png) no-repeat;
   background-size: contain;
@@ -537,21 +638,27 @@ a{
   height: 100vh;
   padding: 25px;
 }
+
 .circleBox .loaderBox {
   width: 100%;
 }
+
 .d-block {
   display: block;
-} 
+}
+
 .mb-3 {
   margin-bottom: 15px;
 }
+
 .mb-4 {
   margin-bottom: 40px;
 }
+
 .position-relative {
   position: relative;
 }
+
 /* media query start here----------*/
 @media (min-width: 768px) and (max-width: 1024px) {
   .container {

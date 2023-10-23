@@ -12,7 +12,7 @@
 
   /* Add styles for scrollable table */
   .scrollable-table {
-    height: 450px; /* Adjust height as needed */
+    height: 70vh; /* Adjust height as needed */
     overflow-y: auto;
     display: block;
   }
@@ -38,7 +38,7 @@
 
 .fixed-header {
   position: sticky;
-  top: 0;
+  top: -1px;
   background-color: white;
   z-index: 1;
 }
