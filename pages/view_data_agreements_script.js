@@ -173,12 +173,12 @@ for (var i = 0; i < buttons.length;i++) {
       // Locate all cells that are used for filtering of search results
       const f_cells = document.querySelectorAll('.filterableCol');
       console.log(f_cells);
-      len = f_cells.length;
+      len = f_cells.length; 
       for (var i = 0; i < f_cells.length;i++) {
           //work with regexp in cell
           console.log(f_cells[i]);
           // set column index number for each column
-          f_cells[i].setAttribute("colindex", i);   
+          f_cells[i].setAttribute("colindex", i); 
           f_cells[i].addEventListener('input',  function (event){
             filterTable_a();
          },false);
@@ -194,12 +194,14 @@ for (var i = 0; i < buttons.length;i++) {
 
 function sortTa() {
 
-    sortTable(event.target.getAttribute("colindex"));
+    sortTable(event.target);
 }
 
 // Function to sort the table
-function sortTable(columnIndex) {
-    console.log("sortable: " + columnIndex)
+function sortTable(colheader) {
+  const columnIndex = colheader.parentNode.getAttribute("colindex");
+  console.log("sortable: " + columnIndex, colheader)
+
     const table = document.getElementById('dataTable');
     
     let rows = Array.from(table.rows).slice(1);  // Ignore the header
