@@ -511,7 +511,7 @@ a {
 .signupWrap {
   width: 90%;
   margin: 40px auto;
-  height: 87vh;
+  /* height: 87vh; */
   overflow-y: auto;
 }
 
@@ -520,7 +520,7 @@ a {
   width: 50%;
   border-radius: 10px 0 0 10px;
   padding: 25px;
-  height: 87vh;
+  /* height: 87vh; */
 }
 
 .signupBox .logo {
@@ -638,7 +638,7 @@ a {
   background: #cacaca;
   width: 50%;
   border-radius: 0 10px 10px 0;
-  height: 87vh;
+  /* height: 87vh; */
   padding: 25px;
   display: flex;
   align-items: center;
