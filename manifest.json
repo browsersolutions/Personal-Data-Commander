@@ -5,9 +5,6 @@
   "author": "Cybotix Team",
   "homepage_url": "https://github.com/",
   "manifest_version": 3,
-  "action": {
-    "default_icon": "./icons/icon.png"
-  },
   "content_scripts": [
     {
       "matches": ["*://*/*"],
