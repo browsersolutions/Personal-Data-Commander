@@ -1,13 +1,11 @@
-html,
-ul,
-li {
+html {
   margin: 0;
   padding: 0;
   height: 100%;
 }
 
 body {
-  width: 100vw;
+  width: 100dvw;
   height: 100%;
   display: block;
   font-family: sans-serif;
@@ -23,11 +21,12 @@ body {
   padding: 0;
   margin: 0;
 }
-
 ul,
 li {
   list-style-type: none;
   height: auto;
+  margin: 0;
+  padding: 0;
 }
 
 .d-none {
@@ -75,7 +74,7 @@ a {
 
 .container-fluid {
   padding: 15px;
-  height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
 }
 
@@ -103,14 +102,16 @@ a {
 }
 
 .logoBox {
-  background: url(../icons/logoIcon.png) no-repeat;
+  background: url(../icons/logo.svg) no-repeat;
   width: 50px;
-  height: 65px;
+  height: 25px;
   margin: 0 auto;
   display: block;
   background-size: contain;
 }
-
+.active .logoBox {
+  width: 100px;
+}
 .profileBox {
   width: 50px;
   height: 50px;
@@ -235,7 +236,7 @@ a {
   animation: shake 0.5s;
 
   /* When the animation is finished, start again */
-  animation-iteration-count: infinite;
+  animation-iteration-count: initial;
 }
 
 @keyframes shake {
@@ -320,7 +321,7 @@ a {
 }
 
 .sidebarMenuList a:hover .historyIcon,
-.sidebarMenuList a.active .purchasesIcon {
+.sidebarMenuList a.active .historyIcon {
   background-position: -40px -36px;
 }
 
@@ -486,6 +487,7 @@ a {
   border-top: 0;
   padding: 25px 20px;
   border-radius: 0 10px 10px 10px;
+  margin-bottom: 30px;
 }
 
 .tableResponsive {
@@ -509,7 +511,7 @@ a {
 .signupWrap {
   width: 90%;
   margin: 40px auto;
-  height: 100vh;
+  /* height: 87vh; */
   overflow-y: auto;
 }
 
@@ -518,13 +520,14 @@ a {
   width: 50%;
   border-radius: 10px 0 0 10px;
   padding: 25px;
-  height: 100vh;
+  /* height: 87vh; */
 }
 
 .signupBox .logo {
-  background: url(../icons/green-icon.png) no-repeat;
-  width: 82px;
-  height: 62px;
+  background: url(../icons/green-logo.svg) no-repeat;
+  width: 135px;
+  height: 24px;
+  margin-bottom: 20px;
   display: block;
 }
 
@@ -635,18 +638,23 @@ a {
   background: #cacaca;
   width: 50%;
   border-radius: 0 10px 10px 0;
-  height: 100vh;
+  /* height: 87vh; */
   padding: 25px;
+  display: flex;
+  align-items: center;
 }
 
 .circleBox .loaderBox {
   width: 100%;
+  height: 100%;
 }
 
 .d-block {
   display: block;
 }
-
+.mb-2 {
+  margin-bottom: 10px;
+}
 .mb-3 {
   margin-bottom: 15px;
 }
@@ -658,11 +666,62 @@ a {
 .position-relative {
   position: relative;
 }
+/* offers page------------ */
+.offersList {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -2%;
+  justify-content: center;
+}
+.offersList li{
+  background: #f9f9f9;
+  width: 30%;
+  margin: 0 0 3% 2%;
+  color: #000;
+  font-size: 14px;
+  box-shadow: 0 0px 5px 1px rgba(0,0,0,.1);
+  border-radius: 0 0 10px 10px;
+  height: 100%;
+}
+.offersList li .imgBox {
+  margin-bottom: 20px;
+}
+.offersList li img {
+  width: 100%;
+}
+.offersList .textBox {
+  margin: 0 15px 15px;
+  min-height: 260px;
+  position: relative;
+}
+.offersList h2 {
+  margin: 0 0 10px;
+  font-weight: 400;
+  font-size: 18px;
+}
+.offersList p {
+  margin: 0 0 15px;
+  font-size: 13px;
+  line-height: 20px;
+}
+.offersList a {
+  color: #ff5400;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
 
 /* media query start here----------*/
 @media (min-width: 768px) and (max-width: 1024px) {
+  .container-fluid {
+    height: auto;
+  }
   .container {
     width: 75%;
     margin-left: 15%;
+  }
+  .offersList .textBox {
+    min-height: 385px;
   }
 }

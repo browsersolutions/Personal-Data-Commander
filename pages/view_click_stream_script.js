@@ -81,6 +81,11 @@ async function fetchData() {
         // Get table body element
         const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
 
+        if (tableBody.rows.length) {
+            tableBody.rows.forEach(row => {
+                if (row) row.deleteRow();
+            });
+        }
         // Loop through data and populate the table
         data.forEach(row => {
             //        console.log(row);
@@ -103,15 +108,14 @@ async function fetchData() {
             const anchor = document.createElement('a');
 
             // Set the anchor's text and href attributes
-            anchor.href = row.url; // Replace with your desired URL
+            anchor.href = row.url;
             anchor.target = '_blank'
             anchor.title = row.url;
             if (row.url.length > 100) {
-                // Trim the string to 30 characters and add ellipses
+                // Trim the string to 100 characters and add ellipses
                 anchor.textContent = row.url.slice(0, 100) + '...';
             } else {
                 anchor.textContent = row.url;
-
             }
             // Append the anchor to the cell
             cell3.appendChild(anchor);
@@ -195,12 +199,14 @@ const sortStates = {
 
 function sortTa() {
 
-    sortTable(event.target.getAttribute("colindex"));
+    sortTable(event.target);
 }
 
 // Function to sort the table
-function sortTable(columnIndex) {
+function sortTable(colheader) {
+    const columnIndex = colheader.getAttribute("colindex");
     console.log("sortable: " + columnIndex)
+    colheader.classList.toggle('fixed-header-ascending')
     const table = document.getElementById('dataTable');
 
     let rows = Array.from(table.rows).slice(1); // Ignore the header
