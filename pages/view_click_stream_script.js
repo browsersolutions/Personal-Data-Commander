@@ -1,5 +1,7 @@
 
-const server_url = "http://localhost:3000";
+//const server_url = "http://localhost:3000";
+const server_url = "https://api.cybotix.no";
+
 
 const URI_plugin_user_get_all_clicks = "/plugin_user_get_all_clicks";
 const URI_plugin_user_delete_click = "/plugin_user_delete_click";
@@ -11,14 +13,13 @@ const plugin_uuid_header_name = "installationUniqueId";
 // Function to use "fetch" to delete a data row
 async function deleteDataRow(uuid) {
     try {
+        console.log("deleteing row: " + uuid);
         // userid is collected from authenticated session.
         const userid = "";
         let plugin_uuid = await chrome.storage.local.get(['installationUniqueId']);
 
-        //let browser_id = await chrome.storage.local.get(['installationUniqueId']);
-        //const id_value = id.installationUniqueId;
-        //console.debug(id_value);
-        const message_body = '{ "userid":"' + userid + '","browser_id":"' + plugin_uuid.installationUniqueId + '", "uuid":"' + uuid + '" }';
+ 
+        const message_body = JSON.stringify({ uuid: uuid });
         // Fetch data from web service (replace with your actual API endpoint)
         const response = await fetch(server_url + URI_plugin_user_delete_click, {
             method: 'POST',
@@ -51,16 +52,14 @@ async function fetchData() {
         let plugin_uuid = await chrome.storage.local.get(['installationUniqueId']);
         console.debug(plugin_uuid);
         const opts = {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 [plugin_uuid_header_name]: plugin_uuid.installationUniqueId
             },
-            body: JSON.stringify({
-                userid: "dummy",
-                browser_id: plugin_uuid.installationUniqueId
-            })
+            
         };
+
         console.debug(JSON.stringify(opts));
         let response = await fetch(server_url + URI_plugin_user_get_all_clicks, opts);
         console.debug(response);
@@ -128,13 +127,8 @@ async function fetchData() {
             deleteButton.onclick = function () {
                 // Remove the row from the table
                 newRow.remove();
-                console.log(event.target.parentNode);
-                console.log(event.target.parentNode.parentNode);
-                console.log(event.target.parentNode.parentNode.querySelector("[name=uuid]"));
-                console.log(event.target.parentNode.parentNode.querySelector("[name=uuid]").textContent);
-
-                const uuid = event.target.parentNode.parentNode.querySelector("[name=uuid]").textContent;
-                // call to API to delete row from data base
+              
+              // call to API to delete row from data base
                 deleteDataRow(row.uuid);
 
             };

@@ -1,0 +1,126 @@
+<table class="whole_note_table" name="whole_note_table" minimized="visible" style="width: 250px;
+height: 250px;
+z-index: 103;
+position: absolute;
+padding: 0px;
+margin: 0px;
+border: solid 1px;
+border-color: rgba(255, 0, 0, 0.7);
+background: rgba(205, 205, 205, 0.6)"><!--
+	<tr class="whole_note_topbar" minimized="visible" style="height: 22px; width: 100%; z-index: 103; top: 0px;">
+		<td class="topbar" minimized="visible" style="height: 22px; width: 100%; top: 0px; z-index: 103;">
+			<table class="topbar_table" minimized="visible" style="height: 22px; width: 100%;  top: 0px; position: relative; z-index: 103; text-align: right;">
+				<tr class="note_ribbon" minimized="visible" style="height: 22px; ">
+					<td class="topbar_filler" minimized="visible" style="width: 180px;  top: 0px;  z-index: 103;"/>
+                <td>
+                <table style="width: 70px; top: 0px;  z-index: 103;">
+                <tr >
+                 
+					<td class="icon" name="goto" minimized="visible" js_action="goto_note" style="padding: 0px; text-align: left; width: 20px; height: 20px; z-index: 130; border: 1px solid #F00;">
+                      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAHYYAAB2GAV2iE4EAAAGbSURBVFhH7Ze9igIxFIXPrKDWVpa2tlZWoqUPIFqIWomVT2NlJWLhD2hlq61PYO0DqFgIgqDZuZvIjjiuGZPJDrvzwWGGJHM5uSE3E4sxMASYD/EMLKFBVUKDqvxPg6MREIsBluVd9boIItBeBycToFoFzmeg0QBSKdEhQa/Hxy+XooEgg7o0HoNFo2DJ5Nek2WLhPu6Z8nkuZ5u2Jb5lLpsFul3RqAEtBmczbo7IZIDplL9rwZnOd0XLQqGcisfB1mv38c/k6xLbge2I3zqdgHRadCrwt+rgfM43g0mkDV4uQKfDN4NJk9IGIxFgOORlxKTJh5Pkroq7cDwCrRaw3QL9PlAuA4UC73v17Svc4jwYpPNQlkQC2O0MG5TJYLMJ7PdmMkg1664w/qTDASyX4+ctnbu3drcC+46UCjXt4koFWK2AwQAolUSHz3jaxe22WXOEp0JdLJo1R3gy+BuEBlUJvEEtlyYqsJsNvyQR16s9c3vq9CRk3327NNVq/C9ahyiWM7b2a6du7MQGm9CgKqFBVUKDqgTcIPAJNuUIuQXP7xIAAAAASUVORK5CYII=" alt="goto" style="margin: 0px;height: 20px;">
+                    </td>
+                    <td class="icon" name="copy" js_action="copy_note_to_clipboard" style="text-align: left; width: 20px; height: 20px; z-index: 104; border: 1px solid #F00;">
+	                 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAdhgAAHYYBXaITgQAAA1tJREFUSEutVUluE0EUfdWDDQmJA2EUgkgMIVIYF4BYsQL2HAGuADeAJay5AkFGYgkIITgACYMYBAdAChHCDgFsVzfvVbnaneCGIOWrX7v71////aFcbZ4+25Hv2vUDmTXYSMmJei3DwusJmJevxvPjx9ro9TxJkvw/mbU5ckVdI0mSYa65F1GWRbBZDT1bo7KGJ08iTExYjI9b9/s3jI5aHDtqEce1IkYZpHFkZn5hGyv5RSODlDpjlt3CemX7dmBxcQs6Hd+iQvhSr1vcbW5DBF1kNESnE7v1mSMRy5/A168Nh1ZrOL59a+DTp4bzj6IEMWEQw+SKI/hKyNB/MTQwqVP6jOpoNFK2pc52JGxl+gfS1GN5OcHPnwlWVmLUanVEXIOLJZJcJBy0FCTxhFJr+CJNMDu7xN4vYWTky1CMjn7B2JhHo7GEnTsXkTCpiAA0F1eJ2sXguZSCRCQpms0O3r61mJyMcGQmwaFDcSWmpxPs3hNxPjnu3PmFNA6VFCShkkAiSYsZ3bi5Fe/fTeHjx/2V+PBhCrdvTTr7Vkt3xRKRGAwvEkQlElO0y5OsfNc9RrdXDYVqt5Uw/RnTEwhuJjIIBJ7Eiwy8k//VmmyrENYlstdzqGRVgEDiKxmQ9ANpbsPgbIWyfdBJm2uBjG7LeWYvg38sXNu4FlWg8O3bF1UINHFXwapFydpKwrvWq1C2DzFXkcQcj5SCxG/htU45WzMM3k8I9iGpEglPLd6DYRA9K0OJz1Q7cBh0JA2zd+Dx7EiCwlpv1Gpb3pVF3ylsSQashIsRKgkx6cMzqiCxGc+deooXC2fw7Plp6jIiZBacCLVnLdyabPv27oCUTokaeheKhGETnDoxicMHx/muwIKkRFJZhdAncZXrXSRFu1LkNNbwu9zS3UDc/8frRNCWjrldq6AYUVQmkU5+jkEKfQM4wBJkkFmtsXHqHKXN42W5ApZtyXLtKj67T7kI/Sls5ufP5idPTnEmGvZAYmb16PFnXLr4vK9ZvzSb53D58j4+bcLdew9ZhmsJM+dXrQxldvHCFK5dn8HmzbH7gP0LIyMRrlw9QILDzt+3jJW8fnM+Pzo7zcfVlQxk0Nv1ieLwg6+9izHM3ZuDuf9gbx7H+qbLYGPFGINut4ffZxEjfkeXmgwAAAAASUVORK5CYII=" alt="copy" js_action="copy_note_to_clipboard" style="height: 20px; z-index: 106;">
+				    </td>
+					<td class="icon" minimized="visible" js_action="minimize_note" style="padding: 0px; text-align: left; width: 20px; height: 20px; z-index: 130; border: 1px solid #F00;">
+                      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAdhgAAHYYBXaITgQAAAJFJREFUWEftjjEKwDAMxPz/F2dLBaGTti5VoWAJo+lmby4MdiyBHUtgxxLYsQR2LIEdS2DHEtixBHYsgR1LYMcS2LEEdiyBHUtgxxLYsQR2LIEdS2DHEtixBHYsgR1LYMcS2LEEdiyBHUtgxxLYsQR2LIEdS2DHEvg8ax1m3uXe8Q98yncHVsGOJbBjCezYYfYFZAOuYDgLc3IAAAAASUVORK5CYII=" alt="min" style="margin: 0px;height: 20px;">
+					</td>
+					<td class="icon" name="close" minimized="visible" js_action="close_note" style="text-align: left; width: 20px; height: 20px; z-index: 130; border: 1px solid #F00;">
+						<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAHYYAAB2GAV2iE4EAAAKRSURBVFhH1VhNT8MwDDXcEIi/M2kcuCBAgxPwKxHiDNyQkBji3/C5A1D86nn1Ui9Nmw6VJ73WtE5i/OrE2kZRUEEDxub8Plj8rwC/v4XPz0Sfn8J1Q9d5fKzWtxh8BpeK5OlJ7uMx0eGh2FdXRNvbYveN93eiszOx7+6IplOxRyO5l0CAyo8P4fFxGXTJ/X0q3t6E1jeHLy/Cg4NqncmEitlMaH2TJN7ZmRs9Ynd3bjTA3QeR+pMTse/vK7mvr/PlDmXlzJXAp7S1JfYSbDotISle9yW3juN/djEfZMU9Nl9UYh5YQ47c3lhvDYvGo64PuV9fiS4uxE6S1SJMqUdIAFcrN6TC85g8+t6TFbuFNyZk8kbNC9WQIrfnw8Glw4t6FZENZFEziaLRwvF8w8yBnm+MfK0/jBELaHC6uJVbN+EcWS07ncUcSA1WSm8TbiWrQeeGFdWtlXlzU1W3AtUKoGKTqnUVwpS2ocptq1upssLHG5vK7HbLk1sRe5eKrAB/fiqG+PqaG5nIziAKQr+3EDnHoiKrSLyuRLNpCyerCwo/yibiowe9fU7fwe6rC+okMaQLZeXFF7C2orPcXtSr6J0QoHdCIFt6FMIX48C2WeRr/WFITAp6ssaOL4yBT9suyDJZYk/WlOOLA6mhldxe1JZe5sDUDIDwTe2CQvK1/hDsuytBMDqPMkXuqMTeJty1KwE4EOLMLaFRbi9q/EeerF0yFxJzW7mxjmbS8+dr9QcCAD1ZYzK0JebCnLa6j46q9a1vUhXzhL0jdc6lsxg/gQH48ej0VOzLy4xmswE4z8/Pxb69JXp4EHtvT+4lbDq5RSo5nfo/5KyDKisHt1jfvs9ut9aNzu3WX2HwGRx4gES/2QpAk/X+YF4AAAAASUVORK5CYII=" alt="close" js_action="close_note"  style="margin: 0px;height: 20px;">
+					</td>
+				</tr>
+				</table>
+				</td>	
+				</tr>
+			</table>
+		</td>
+	</tr>-->
+	<tr class="whole_note_middlebar" minimized="notvisible" style="height: 80px;
+ width: 100%;
+ padding: 0px;
+margin: 0px;
+z-index: 103;">
+		<td class="middlebar" style="height: 100%;
+		padding: 0px;
+	margin: 0px;
+	z-index: 103;">
+			<form name="note_form" class="note_form" style="border: 0px solid rgba(205, 205, 205, 0.6);
+ border-radius: 2px;
+ padding: 1px 1px;
+ margin: 0px;
+ position: relative;
+ bottom: 0;
+ z-index: 103;">
+				<input type="hidden" name="selection_text"/>
+				<input type="hidden" name="requests"/>
+				<input type="hidden" name="original_message"/>
+				<input type="hidden" name="platformtoken"/>
+				<input type="hidden" name="uuid"/>
+				<input type="hidden" name="createtime"/>
+				<input type="hidden" name="lastmodifiedtime"/>
+				<input type="hidden" name="enabled"/>
+				<textarea name="message_display_text" class="yellow" contenteditable="true" style=" width: 250px;
+ height: 200px;
+ z-index: 103;
+ background: rgba(205, 205, 205, 0.6);
+ min-height: 120px;
+ min-width: 240px;
+ text-align: left;
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ border: 1px;
+ border-color: rgba(255, 0, 0, 1.0);
+ border-radius: 2px;
+ padding: 0px 0px;
+ position: relative;
+ z-index: 103;
+ ">something</textarea>
+
+<textarea name="request_details" class="yellow" contenteditable="false" style=" width: 250px;
+ height: 200px;
+ z-index: 103;
+ background: rgba(205, 205, 205, 0.6);
+ min-height: 120px;
+ min-width: 240px;
+ text-align: left;
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ border: 1px;
+ border-color: rgba(255, 0, 0, 1.0);
+ border-radius: 2px;
+ padding: 0px 0px;
+ position: relative;
+ z-index: 103;
+ ">something</textarea>
+			</form>
+		</td>
+	</tr>
+	<tr class="whole_note_bottombar" minimized="notvisible" style="height: 30px;
+ width: 100%;
+ z-index: 103;
+ bottom: 0;
+ padding: 0px;
+margin: 0px;">
+		<td class="bottombar" style="height: 30px;
+ width: 100%;
+ z-index: 103;
+ padding: 0px;
+margin: 0px;
+bottom: 0px">
+			<table class="bottombar_table" style="height: 28px;
+			bottom: 0;
+			width: 100px;
+	z-index: 104;
+	position: relative;
+	padding: 0px;
+	margin: 0px;
+	border: solid 0px;
+	border-color: rgba(255, 0, 0, 0.7);
+	background: rgba(205, 205, 205, 0.6)">
+				<tr class="button_ribbon" style="padding: 0px; margin: 0px;">
+					<td class="button_cell" style="padding: 0px; text-align: left; z-index: 104;">
+						<img src="data:image/png;base64,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" alt="yes" js_action="agree_terms" style="margin: 0px;height: 20px; z-index: 206;">
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
