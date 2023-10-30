@@ -5,3 +5,11 @@ log/
 # Temporary folders
 tmp/
 temp/
+
+deployment/Chrome/*/*/*.txt
+deployment/Chrome/*/*.txt
+deployment/Chrome/*/*.png
+deployment/Chrome/*.txt
+deployment/Chrome/*.png
+deployment/Firefox
+

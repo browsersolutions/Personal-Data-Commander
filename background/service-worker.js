@@ -1,5 +1,6 @@
 
-const server_url = "http://localhost:3000";
+//const server_url = "http://localhost:3000";
+const server_url = "https://api.cybotix.no";
 
 const URI_plugin_user_post_click = "/plugin_user_post_click";
 const URI_plugin_user_delete_click = "/plugin_user_delete_click";
@@ -49,6 +50,7 @@ Setting the installationUniqueId (se code below) also sets up the rules for this
 The user may reset the rules to the default ruleset at any time.
 
  */
+
 
 var domain_capture_exclusion_list = {
     "localhost": "1",
@@ -491,7 +493,7 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                                 }).then(function (data) {
                                                     console.log(data);
                                                     console.log(data.dataaccesstoken);
-                                                    token = data.dataaccesstoken;
+                                                    dataaccesstoken = data.dataaccesstoken;
                                                     // issue a redirect to the target URL, with the token as a parameter
                                                     // send a messate back to the content script to issue the redirect
                                                     chrome.scripting
@@ -515,8 +517,8 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                                         headername: "X_HTTP_CYBOTIX_HAVE_PLUGIN",
                                                         headervalue: "true",
                                                         datarequest: getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"),
-                                                        platformtoken: token,
-                                                        token: token,
+                                                        platformtoken: platformtoken,
+                                                        dataaccesstoken: dataaccesstoken,
                                                         redir_target: redir_target
 
                                                     };
@@ -576,11 +578,12 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                                              };
                                                     return chrome.tabs.sendMessage(details.tabId, message);
                                                 }).then(function (response) {
+                                                    console.log('Message sent and response received:', response);
                                                     if (chrome.runtime.lastError) {
                                                         console.error(chrome.runtime.lastError);
                                                         return;
                                                     }
-                                                    console.log('Message sent and response received:', response);
+                                                    
                                                 }).catch(function (two) {
                                                     console.log(two);
                                                 });
@@ -660,6 +663,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             type: "acknowledgment",
             payload: "Hello from background script!"
         });
+    } else if (message.type == "local_pages_intercept") {
+        // redirect an external link to the GUI page
+        if (message.redirect) {
+            // The URL inside the plugin (e.g., an HTML file)
+            const pluginURL = chrome.runtime.getURL(message.uri);
+            chrome.tabs.update(sender.tab.id, {url: pluginURL});
+          }
+
+
     } else if (message.type == "accept_single_datarequest") {
 
         console.log("Received message from content script:", message);
