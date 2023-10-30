@@ -3,7 +3,7 @@
   "description": "User's capture their own click data and store it temporarily in their own data-account",
   "version": "0.8.5",
   "author": "Cybotix Team",
-  "homepage_url": "https://github.com/",
+  "homepage_url": "https://www.cybotix.no/",
   "manifest_version": 3,
   "content_scripts": [
     {
