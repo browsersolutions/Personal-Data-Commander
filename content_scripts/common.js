@@ -1,4 +1,144 @@
 
+function attachEventlistenersToYellowStickynote(note) {
+    console.log("attachEventlistenersToYellowStickynote.start");
+    console.debug(note);
+
+    try {
+
+        const mySave_new_note = (event) => {
+            event.stopPropagation();
+            save_new_note(event);
+            event.stopPropagation();
+        };
+        const myclose_note = (event) => {
+            close_note(event);
+            event.stopPropagation();
+        };
+
+        const myCopy_note_to_clipboard = (event) => {
+            copy_note_to_clipboard(event);
+            event.stopPropagation();
+        };
+
+       
+        const myminimize_note = (event) => {
+            minimize_note(event);
+            event.stopPropagation();
+        };
+
+        const mymaximize_note = (event) => {
+            maximize_note(event);
+            event.stopPropagation();
+        };
+        const myrightsize_note = (event) => {
+            rightsize_note(event);
+            event.stopPropagation();
+        };
+
+        const mydelete_note = (event) => {
+            delete_note(event);
+            event.stopPropagation();
+        };
+        const mySave_changes_to_note = (event) => {
+            save_changes_to_note(event);
+            event.stopPropagation();
+        };
+        const mydisable_note = (event) => {
+            disable_note(event);
+            event.stopPropagation();
+        };
+
+        const mylocate_note = (event) => {
+            console.log("event.stopPropagation();");
+            locate_note(event);
+            event.stopPropagation();
+
+        };
+
+
+
+        // for close buttons/icons
+        var allGoTo = note.querySelectorAll('[js_action="close_note"]');
+        for (var i = 0; i < allGoTo.length; i++) {
+            allGoTo[i].removeEventListener("click", myclose_note);
+            allGoTo[i].addEventListener("click", myclose_note);
+        }
+
+        // for save buttons/icons
+        var allGoTo3 = note.querySelectorAll('[js_action="save_new_note"]');
+        for (var i = 0; i < allGoTo3.length; i++) {
+            allGoTo3[i].removeEventListener("click", mySave_new_note);
+            allGoTo3[i].removeEventListener("click", mySave_changes_to_note);
+            allGoTo3[i].addEventListener("click", mySave_new_note);
+        }
+
+
+        // for delete buttons/icons
+        var allGoTo2 = note.querySelectorAll('[js_action="delete_note"]');
+        for (var i = 0; i < allGoTo2.length; i++) {
+            allGoTo2[i].removeEventListener("click", mydelete_note);
+            allGoTo2[i].addEventListener("click", mydelete_note);
+        }
+
+       
+        var allGoTo5 = note.querySelectorAll('[js_action="copy_note_to_clipboard"]');
+        for (var i = 0; i < allGoTo5.length; i++) {
+            console.debug(allGoTo5[i]  );
+            allGoTo5[i].removeEventListener("click", myCopy_note_to_clipboard);
+            allGoTo5[i].addEventListener("click", myCopy_note_to_clipboard);
+        }
+
+
+        var allGoTo7 = note.querySelectorAll('[js_action="save_changes_to_note"]');
+        for (var i = 0; i < allGoTo7.length; i++) {
+            allGoTo7[i].removeEventListener("click", mySave_new_note);
+            allGoTo7[i].removeEventListener("click", mySave_changes_to_note);
+            allGoTo7[i].addEventListener("click", mySave_changes_to_note);
+        }
+
+        var allGoTo8 = note.querySelectorAll('[js_action="disable_note"]');
+        for (var i = 0; i < allGoTo8.length; i++) {
+            allGoTo8[i].removeEventListener("click", mydisable_note);
+            allGoTo8[i].addEventListener("click", mydisable_note);
+          
+          
+
+        }
+ // for button going to note location
+        var allGoTo11 = note.querySelectorAll('[js_action="locate_note"]');
+        for (var i = 0; i < allGoTo11.length; i++) {
+            allGoTo11[i].removeEventListener("click", mylocate_note);
+            allGoTo11[i].addEventListener("click", mylocate_note);
+          
+        }
+
+
+        var allGoTo12 = note.querySelectorAll('[js_action="minimize_note"]');
+        for (var i = 0; i < allGoTo12.length; i++) {
+            allGoTo12[i].removeEventListener("click", myminimize_note);
+            allGoTo12[i].addEventListener("click", myminimize_note);
+       }
+
+       var allGoTo13 = note.querySelectorAll('[js_action="maximize_note"]');
+       for (var i = 0; i < allGoTo13.length; i++) {
+           allGoTo13[i].removeEventListener("click", mymaximize_note);
+           allGoTo13[i].addEventListener("click", mymaximize_note);
+      }
+      var allGoTo14 = note.querySelectorAll('[js_action="rightsize_note"]');
+      for (var i = 0; i < allGoTo14.length; i++) {
+          allGoTo14[i].removeEventListener("click", myrightsize_note);
+          allGoTo14[i].addEventListener("click", myrightsize_note);
+     }
+
+
+
+    } catch (e) {
+        console.error(e);
+    }
+
+}
+
+
 
 /**
  * make note "draggable" across the screen

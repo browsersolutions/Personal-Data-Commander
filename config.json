@@ -1,0 +1,14 @@
+{
+   "server_url": "http://api-dev.cybotix.no",
+   "URI_plugin_user_post_click": "/plugin_user_post_click",
+"URI_plugin_user_delete_click": "/plugin_user_delete_click",
+"URI_plugin_user_create_dataaccess_token": "/plugin_user_create_dataaccess_token",
+"URI_plugin_user_query_accesstoken_status": "/plugin_user_query_accesstoken_status",
+"URI_plugin_user_check_request_against_data_agreements": "/plugin_user_check_request_against_data_agreements",
+"URI_plugin_user_add_data_agreement": "/plugin_user_add_data_agreement",
+"valid_audience_values": {
+    "cybotix-personal-data-commander": "1",
+    "Cybotix": "1"
+}
+
+}

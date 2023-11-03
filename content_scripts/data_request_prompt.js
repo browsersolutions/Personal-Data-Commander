@@ -104,7 +104,7 @@ if (!(isOnPageAlready(message))){
         }
 
 
-        // load the note template, a html file store with the pligin itself. (NB: this is not a user editable file)
+        // load the note template, a html file store with the plugin itself. (NB: this is not a user editable file)
         fetch(chrome.runtime.getURL('prompt_note_template.html'))
         .then((response) => response.text())
         .then((html) => {
@@ -196,7 +196,7 @@ if (!(isOnPageAlready(message))){
                 console.log("node already exists");
             }
             // attach event listeners to buttons and icons
-            //attachEventlistenersToYellowStickynote(node_root);
+            attachEventlistenersToYellowStickynote(node_root);
 
             const myaccept_note = (event) => {
                 console.log("event.stopPropagation();");
@@ -225,6 +225,29 @@ if (!(isOnPageAlready(message))){
 }
 
 
+
+
+
+function close_note(event) {
+    console.debug("# close note");
+    // call to kill the yellow note window
+
+    // loop upwards from the target nodes to locate the root node for the sticky note
+    try {
+    
+    let note_root_node = findAncestorByAttributeValue(event.target, 'type', 'datarequestnote');
+ 
+
+    
+            console.debug("closing...");
+            console.debug(note_root_node);
+            note_root_node.remove();
+    
+    } catch (e) {
+        console.error(e);
+    }
+
+}
 function safeParseInnerHTML(rawHTML, targetElementName) {
 
     // list of acceptable html tags

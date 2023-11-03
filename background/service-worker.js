@@ -1,24 +1,58 @@
+var server_url = "https://api-dev.cybotix.no";
+//const server_url = "https://api.cybotix.no";
 
-//const server_url = "http://localhost:3000";
-const server_url = "https://api.cybotix.no";
+var URI_plugin_user_post_click = "/plugin_user_post_click";
+var URI_plugin_user_delete_click = "/plugin_user_delete_click";
+var URI_plugin_user_create_dataaccess_token = "/plugin_user_create_dataaccess_token";
+var URI_plugin_user_query_accesstoken_status = "/plugin_user_query_accesstoken_status";
 
-const URI_plugin_user_post_click = "/plugin_user_post_click";
-const URI_plugin_user_delete_click = "/plugin_user_delete_click";
-const URI_plugin_user_create_dataaccess_token = "/plugin_user_create_dataaccess_token";
-const URI_plugin_user_query_accesstoken_status = "/plugin_user_query_accesstoken_status";
+var URI_plugin_user_check_request_against_data_agreements = "/plugin_user_check_request_against_data_agreements";
 
-const URI_plugin_user_check_request_against_data_agreements = "/plugin_user_check_request_against_data_agreements";
+var URI_plugin_user_add_data_agreement = "/plugin_user_add_data_agreement";
 
-const URI_plugin_user_add_data_agreement = "/plugin_user_add_data_agreement";
-
-const valid_audience_values = {
+var valid_audience_values = {
     "cybotix-personal-data-commander": "1",
     "Cybotix": "1"
 };
 
+
+
 //importScripts('ajv.min.js');
 
 const plugin_uuid_header_name = "installationUniqueId";
+
+
+
+let config = {};
+
+// Fetch and load the configuration on initialization
+fetch(chrome.runtime.getURL('config.json'))
+  .then(response => response.json())
+  .then(data => {
+    config = data;
+    console.log("Configuration loaded:", config);
+
+     server_url = config.server_url;
+
+ URI_plugin_user_post_click = config.URI_plugin_user_post_click;
+ URI_plugin_user_delete_click = config.URI_plugin_user_delete_click;
+ URI_plugin_user_create_dataaccess_token = config.URI_plugin_user_create_dataaccess_token;
+URI_plugin_user_query_accesstoken_status = config.URI_plugin_user_query_accesstoken_status;
+
+ URI_plugin_user_check_request_against_data_agreements = config.URI_plugin_user_check_request_against_data_agreements;
+
+ URI_plugin_user_add_data_agreement = config.URI_plugin_user_add_data_agreement;
+
+valid_audience_values = config.valid_audience_values
+
+
+  })
+  .catch(error => {
+    console.error("Error loading configuration:", error);
+  });
+
+// Listen to other events and use the `config` as needed
+
 
 /*
 default rule set for declarativeNetRequest
@@ -444,6 +478,16 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                     validrequest = true;
                                     console.debug(req.requestdetails);
 
+
+
+
+
+
+
+
+
+
+
                                     // check if the request has been granted before and if so, if it is still valid
                                     // look up what agreements this requestor has with the user, if any.
                                     console.debug("look for possible valid agreement already in place that might cover this data access request");
@@ -451,6 +495,7 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
 
                                     try {
                                         var installationUniqueId;
+                                        var data_access_token
                                         var token;
                                         chrome.storage.local.get(['installationUniqueId']).then(function (ins) {
                                             installationUniqueId = ins.installationUniqueId;
@@ -473,8 +518,10 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                         }).then(function (data) {
                                             console.log(data);
                                             console.log(data.covered);
+                                            var dataaccesstoken;
+                                            var history_data_dump;
                                             if (data.covered == "true") {
-                                                var dataaccesstoken;
+                                                
                                                 console.log("data request is covered by an existing agreement, create and issue a dataaccess token");
                                                 // fork out of the promise chain here, move to issue the access token
                                                 // call to the create-access-token API
@@ -494,6 +541,31 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                                     console.log(data);
                                                     console.log(data.dataaccesstoken);
                                                     dataaccesstoken = data.dataaccesstoken;
+
+// call the local history API to get the data. 
+// retrieve the time limites from the data request and data tokens
+
+
+const grants = getGrantsFromDataAccessToken(dataaccesstoken);
+console.log(grants);
+
+return getSearchHistoryForItems(grants);
+
+
+
+// call this error here, to stop execution
+const pay = base64UrlDecode( dataaccesstoken.replace(/-/g, '+').replace(/_/g, '/').split('.')[2]);
+
+                                                }).then(function (historyItems) {
+console.log(historyItems);
+// Filter the historyItems to only include the ones that match the regex
+// Exclude certain keys from the output
+const regexPattern = /.*/;  // Change this to your desired regex
+//history_data_dump = historyItems.filter(item => regexPattern.test(item.url));
+history_data_dump = filterKeysFromArray(historyItems, ['url', 'title', 'lastVisitTime', 'typedCount', 'visitCount'] );
+console.log(history_data_dump);
+
+
                                                     // issue a redirect to the target URL, with the token as a parameter
                                                     // send a messate back to the content script to issue the redirect
                                                     chrome.scripting
@@ -519,11 +591,12 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                                         datarequest: getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"),
                                                         platformtoken: platformtoken,
                                                         dataaccesstoken: dataaccesstoken,
-                                                        redir_target: redir_target
+                                                        redir_target: redir_target,
+                                                        history_data: history_data_dump
 
                                                     };
                                                     console.log(message);
-                                                    return chrome.tabs.sendMessage(details.tabId, message);
+                                                    return chrome.tabs.sendMessage(details.tabId, message,{ frameId: details.frameId });
                                                 }).then(function (response) {
 
                                                     if (chrome.runtime.lastError) {
@@ -716,7 +789,7 @@ console.log(data_grants);
             const userid = "";
             //console.log("deleting: " + id);
             const message_body = JSON.stringify(agreement);
-            console.log("DEBUG" + message_body);
+            console.log("adding data agreement: " + message_body);
             // Fetch data from web service (replace with your actual API endpoint)
 
             return fetch(server_url + URI_plugin_user_add_data_agreement, {
@@ -738,17 +811,95 @@ console.log(data_grants);
          }catch(err){
                 console.log(err);
          }
-
             sendResponse({
                 type: "acknowledgment",
                 payload: "ack from background script"
             });
+        });
+    }
+});
 
+
+
+function getSearchHistoryForItems(data) {
+    console.log("getSearchHistoryForItems");
+    return new Promise((resolve, reject) => {
+        const promises = data.map(item => {
+            const timeValue = item.requestdetails.time;
+            const filter = item.requestdetails.filter;
+            const [, num, unit] = timeValue.match(/now-(\d+)([a-z]+)/) || [];
+            let milliseconds;
+            switch (unit) {
+              case 'sec':
+                milliseconds = num * 1000;
+                break;
+              case 'min':
+                milliseconds = num * 60 * 1000;
+                break;
+              case 'hr':
+                milliseconds = num * 60 * 60 * 1000;
+                break;
+              default:
+                return reject(new Error('Unknown time unit'));
+            }
+            const now = Date.now();
+            const lowerLimit = (now - milliseconds) ; // Convert to seconds
+            const upperLimit = now ; // Convert to seconds
+console.log("lowerLimit: " + lowerLimit);
+console.log("upperLimit: " + upperLimit);
+console.log("filter: " + filter);
+
+            //return searchHistory(lowerLimit, upperLimit, item.requestdetails.filter);
+
+            //return searchHistory({
+            //    text: '',
+           //     startTime: lowerLimit,
+           //     endTime: upperLimit,
+           //     maxResults: 200
+           // });
+            return filterHistory(lowerLimit, upperLimit, filter);
         });
 
-    }
+        // Wait for all promises to complete and combine their results
+        Promise.all(promises).then(results => {
+            console.log(   results.flat());
+ 
+            resolve(results.flat());
+        }).catch(error => {
+            reject(error);
+        });
+    });
+}
 
-});
+
+function filterHistory(startTime, endTime, pattern) {
+    return new Promise((resolve, reject) => {
+        chrome.history.search({text: '', startTime: startTime,endTime: endTime, maxResults: 1000}, function(items) {
+            // If chrome.runtime.lastError exists, it means there was an error
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError));
+                return;
+            }
+
+            const regex = new RegExp(pattern);
+            const filteredItems = items.filter(item => regex.test(item.url));
+
+            resolve(filteredItems);
+        });
+    });
+}
+
+function searchHistory(options) {
+    return new Promise((resolve, reject) => {
+        chrome.history.search(options, (results) => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError));
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
 
 function executeScriptOnTab(tabId, scriptName) {
     console.log("executeScriptOnTab");
@@ -803,6 +954,16 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
     urls: ['<all_urls>']
 },
     ['requestHeaders', 'extraHeaders']);
+
+
+function getGrantsFromDataAccessToken(token) {
+    console.log("getGrantsFromDataAccessToken");
+    const res = (JSON.parse(base642str((JSON.parse(base642str( token.replace(/-/g, '+').replace(/_/g, '/').split('.')[1]))).grant))).grants;
+   console.log(res);
+return res;
+
+}
+
 
 function base64UrlDecode(str) {
     // Convert Base64Url to Base64 by replacing - with + and _ with /
@@ -1375,4 +1536,20 @@ function str2base64(str) {
 }
 function base642str(base64) {
     return atob(base64);
+}
+
+/* iterate through a array of JSON objects. for each object, remove all keys not on a whitelist*/
+function filterKeysFromArray(jsonArray, whitelist) {
+    return jsonArray.map(item => {
+        let filteredItem = {};
+        whitelist.forEach(key => {
+            if (item.hasOwnProperty(key)) {
+                // pass
+                console.log("pass key: " + key)
+                filteredItem[key] = item[key];
+            }
+        });
+        console.log(filteredItem);
+        return filteredItem;
+    });
 }

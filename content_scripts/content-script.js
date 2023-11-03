@@ -1,4 +1,3 @@
-
 console.log("Cybotix:  content-script.js loaded");
 const user_prompt_data_request_sharedsecret="123456";
 
@@ -39,7 +38,7 @@ const newDiv = document.createElement("div");
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Check the type of message (you can define your own types)
-    //console.log(JSON.stringify(message));
+    console.log(JSON.stringify(message));
     console.log(message.type);
     
     if (message.type === 'platformtoken') {
@@ -97,25 +96,10 @@ fetch('http://localhost:3000/generate_platform_token_from_key_form.html')
 });
 
 
-  //  return fetch(url, {
-  //      method: 'GET',
-  //      headers: {
-  //          X_HTTP_CYBOTIX_DATA_ACCESSTOKEN: message.dataaccesstoken
-  //      },
-  //  }).then(function (response) {
-  //      console.log(response.status);
-  //      console.log(response);
-  //  });
-
-
 }
 
   });
   
-
-
-
-
 function findAncestorByAttributeValue(startNode, attributeName, targetValue) {
     let currentNode = startNode;
 
