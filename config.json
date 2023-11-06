@@ -1,5 +1,5 @@
 {
-   "server_url": "http://api-dev.cybotix.no",
+   "server_url": "https://api-dev.cybotix.no",
    "URI_plugin_user_post_click": "/plugin_user_post_click",
 "URI_plugin_user_delete_click": "/plugin_user_delete_click",
 "URI_plugin_user_create_dataaccess_token": "/plugin_user_create_dataaccess_token",
