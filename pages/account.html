@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Account</title>
+</head>
+<body>
+<br>some items that go in to the "account" page.
+>
+<!-- Path: Personal-Data-Commander/pages/privacy.html -->
+
+<p>buttons for the user's account page</p>
+<p>backup</p>
+Backup all your data to a file. Your data is yours. Witch among other things, means you can take it with you. This is the way to do it.
+
+<button id="backup">Backup</button>
+
+
+
+<p>restore</p>
+Resore your information. Suitable after a "Delete all data" action
+<input type="file" id="fileInput" accept=".json">
+<button id="importButton">restore</button>
+<p> delete all</p>
+Remove all your information from Cybotix's servers. If you have a backup, you can always restore your account later. 
+<button id="deleteAccountData">Delete account</button>
+
+
+<p>buttons for the user's click history data page</p>
+<label for="daySelect">Select number of days:</label>
+<select id="daySelect">
+  <!-- JavaScript will populate this select -->
+</select>
+<button id="sendButton">Send to Background</button>
+<script src="./account.js"></script>
+
+</body>
+</html>
+

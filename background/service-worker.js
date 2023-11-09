@@ -1,22 +1,22 @@
 //var server_url = "https://api-dev.cybotix.no";
 //const server_url = "https://api.cybotix.no";
 var server_url = "https://api-dev.cybotix.no";
+//var server_url = "http://localhost:3000";
 
 var URI_plugin_user_post_click = "/plugin_user_post_click";
 var URI_plugin_user_delete_click = "/plugin_user_delete_click";
 var URI_plugin_user_create_dataaccess_token = "/plugin_user_create_dataaccess_token";
 var URI_plugin_user_query_accesstoken_status = "/plugin_user_query_accesstoken_status";
-
+var URI_plugin_user_import = "/plugin_user_import"
+var plugin_user_get_all_clicks = "/plugin_user_get_all_clicks";
+var plugin_user_read_all_data_agreements = "/plugin_user_read_all_data_agreements";
 var URI_plugin_user_check_request_against_data_agreements = "/plugin_user_check_request_against_data_agreements";
-
 var URI_plugin_user_add_data_agreement = "/plugin_user_add_data_agreement";
-
+var URI_plugin_user_set_clickdata_lifetime = "/plugin_user_set_clickdata_lifetime";
 var valid_audience_values = {
     "cybotix-personal-data-commander": "1",
     "Cybotix": "1"
 };
-
-//importScripts('ajv.min.js');
 
 const plugin_uuid_header_name = "installationUniqueId";
 
@@ -30,14 +30,12 @@ fetch(chrome.runtime.getURL('config.json'))
     console.log("Configuration loaded:", config);
 
     server_url = config.server_url;
-
+    URI_plugin_user_delete_account = config.URI_plugin_user_delete_account;
     URI_plugin_user_post_click = config.URI_plugin_user_post_click;
     URI_plugin_user_delete_click = config.URI_plugin_user_delete_click;
     URI_plugin_user_create_dataaccess_token = config.URI_plugin_user_create_dataaccess_token;
     URI_plugin_user_query_accesstoken_status = config.URI_plugin_user_query_accesstoken_status;
-
     URI_plugin_user_check_request_against_data_agreements = config.URI_plugin_user_check_request_against_data_agreements;
-
     URI_plugin_user_add_data_agreement = config.URI_plugin_user_add_data_agreement;
 
     valid_audience_values = config.valid_audience_values
@@ -114,11 +112,90 @@ chrome.storage.local.get(['installationUniqueId'], function (result) {
         console.debug("now setting installationUniqueId (" + installationUniqueId + ")");
         chrome.storage.local.set({
             installationUniqueId: installationUniqueId
+        }).then(function (res) {
+
+            // Call to upload 24 hours of browising history to the server, in order that the user may have some starting data to "play" with.
+            // This data is subject to some immediate redactions, and will be automatically deleted within 72 hours.
+            historyImport(24);
+
         });
+        /* If installationUniqueId has not bee set in memory it means that this is a new installation.
+        It also means there is no click history in the database for this installation.
+
+        Take a look at the browser history to see if there is a click history there.
+        If so, import 48 hours of it into the database. The user may then exclude/edit/remove as desired before engaging in any sharing.
+
+
+         */
+
     } else {
         console.debug("installationUniqueId already set (" + result.installationUniqueId + ")");
     }
 });
+
+/* This imports url from the browser history into the user's data account with Cybotix.
+Once there the user may opt to share, redact or delete this data as my be appropriate.
+This function is called only once: at initial the setup of the plugin.
+ */
+function historyImport(lastHours) {
+    console.log("historyImport from the last " + lastHours + " hours");
+    // Calculate the time 48 hours ago from now in milliseconds
+    const millisecondsPerHour = 1000 * 60 * 60;
+    const startTime = (new Date()).getTime() - (lastHours * millisecondsPerHour);
+
+    console.log("timestampToEpochSeconds: " + timestampToEpochSeconds("Sun Nov 05 2023 15:49:57 GMT+0100 (Central European Standard Time)"));
+
+    var installationUniqueId;
+
+    chrome.storage.local.get(['installationUniqueId']).then(function (ins) {
+        installationUniqueId = ins.installationUniqueId;
+
+        // Search Chrome history
+        chrome.history.search({
+            'text': '', // empty string returns all history
+            'startTime': startTime,
+            'maxResults': 0 // return all results
+        }, (historyItems) => {
+            // Process the history items
+            const historyDataPromises = historyItems.map(item => {
+                    // POST request for each history item
+                    return fetch(server_url + URI_plugin_user_post_click, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [plugin_uuid_header_name]: installationUniqueId,
+                        },
+                        body: JSON.stringify({
+                            url: item.url,
+                            local_time: convertTimestamp(item.lastVisitTime)
+                        })
+                    })
+                    .then(response => response.json()) // parse JSON response
+                    .catch(error => console.error('Error sending POST request:', error));
+                });
+
+            // Wait for all POST requests to complete
+            Promise.all(historyDataPromises).then(results => {
+                console.log('All history items have been sent', results);
+            });
+        });
+
+    });
+
+}
+
+function timestampToEpochSeconds(timestamp) {
+    // Create a Date object from the timestamp string
+    const date = new Date(timestamp);
+
+    // Get the Unix timestamp in milliseconds
+    const unixTimestampMilliseconds = date.getTime();
+
+    // Convert milliseconds to seconds
+    const unixTimestampSeconds = Math.floor(unixTimestampMilliseconds / 1000);
+
+    return unixTimestampSeconds;
+}
 
 function keyExists(key, obj) {
     return obj[key] !== undefined;
@@ -514,7 +591,7 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                     ({
                                         dataaccesstoken,
                                         history_data_dump
-                                    } = newFunction(installationUniqueId, getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"), details.tabId , details.frameId, redir_target, platformtoken));
+                                    } = newFunction(installationUniqueId, getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"), details.tabId, details.frameId, redir_target, platformtoken));
 
                                 } else {
                                     // there is no data agreement covering the request, prompt the user for one
@@ -626,6 +703,197 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 url: pluginURL
             });
         }
+    } else if (message.type == "delete_click") {
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+
+            del_mess = {
+                browserid: installationUniqueId
+            }
+
+
+
+        });
+  } else if (message.type == "set_click_data_expiration_period") {
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+
+            del_mess = {
+                browserid: installationUniqueId
+            }
+
+  //          # set expiration time for click data (set expiration time to be equal to the utc timestamp plus the provided value)
+
+//            curl -X POST -H "Content-Type: application/json"  -H "installationUniqueId: 6596c84b-544c-98e3-6ce2-8ccc1b334055"  -d '{  "days":5, "hours":1}' http://localhost:3000/plugin_user_set_clickdata_lifetime
+    
+            // Fetch data from web service (replace with your actual API endpoint)
+
+const lifetime_message = {  "days":message.selectedDayCount, "hours":0}
+
+            return fetch(server_url + URI_plugin_user_set_clickdata_lifetime, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [plugin_uuid_header_name]: installationUniqueId
+                },
+                body: JSON.stringify(lifetime_message) // example IDs, replace as necessary
+            });
+            
+        });
+        return true;
+ 
+    } else if (message.type == "deleteAccountData") {
+        console.log("deleteAccountData");
+        // deletes all account data
+        // This action removes the user from the Cybotix platform
+        // The user can be completely restored from backup data
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+
+            del_mess = {
+                browserid: installationUniqueId
+            }
+
+            // Fetch data from web service (replace with your actual API endpoint)
+
+            return fetch(server_url + URI_plugin_user_delete_account, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [plugin_uuid_header_name]: installationUniqueId
+                },
+                body: JSON.stringify(del_mess) // example IDs, replace as necessary
+            });
+        }).then(function (response) {
+            console.log(response);
+
+            // Check for errors
+            try {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        });
+
+    } else if (message.type == "importData") {
+        console.log("importData");
+        console.log(message.data);
+
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+
+            // Fetch data from web service (replace with your actual API endpoint)
+
+            return fetch(server_url + URI_plugin_user_import, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [plugin_uuid_header_name]: installationUniqueId
+                },
+                body: JSON.stringify(message.data) // example IDs, replace as necessary
+            });
+        }).then(function (response) {
+            console.log(response);
+
+            // Check for errors
+            try {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        });
+
+        // Handle the imported data
+        //message.data.forEach(obj => {
+
+
+        //const url = determineUrl(obj); // Implement this function based on your logic
+        //doPostRequest(obj, url);
+        //});
+        return true;
+
+    } else if (message.type == "startBackup") {
+        console.log("startBackup");
+        //var installationUniqueId = "6596c84b-544c-98e3-6ce2-8ccc1b334055"; // = await chrome.storage.local.get(['installationUniqueId']);
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+        chrome.storage.local.get(['installationUniqueId']).then(function (ins) {
+            installationUniqueId = ins.installationUniqueId;
+
+            const urls = message.urls;
+            const all_urls = [{
+                    url: server_url + plugin_user_get_all_clicks,
+                    method: 'GET',
+                    tag: "clickhistory"
+                }, {
+                    url: server_url + plugin_user_read_all_data_agreements,
+                    method: 'GET',
+                    tag: "data_agreements"
+                }
+            ];
+            const backupData = [];
+
+            // Perform all POST requests
+            //Promise.all(urls.map(url => doGetRequest(url, message.data, installationUniqueId)))
+            Promise.all(all_urls.map(endpoint => doGetRequest(endpoint.url, message.data, installationUniqueId, endpoint.tag)))
+            .then(results => {
+                console.log('All requests completed');
+                console.log(JSON.stringify(results));
+
+                // Create an object to hold the transformed data
+                const transformedData = {};
+                // Iterate over each element in the results array
+                results.forEach(item => {
+                    // For each property in the item, add it to the transformed data
+                    for (const[key, value]of Object.entries(item)) {
+                        // Assume each key is the type of data and value is an array of data items
+                        // Ensure the key exists in the transformedData object
+                        transformedData[key] = transformedData[key] || [];
+
+                        // Concatenate the current array of data to the existing array
+                        // Use spread operator to create a new array combining both
+                        transformedData[key] = [...transformedData[key], ...value];
+                    }
+                });
+
+                // Process results and send them back to the popup script
+                console.log(JSON.stringify(transformedData));
+                sendResponse({
+                    backupData: transformedData
+                });
+            })
+            .catch(error => {
+                console.error('Error during backup:', error);
+                sendResponse({
+                    error: 'Backup failed'
+                });
+            });
+        });
+        // Return true to indicate an asynchronous response
+        return true;
 
     } else if (message.type == "accept_single_datarequest") {
 
@@ -741,7 +1009,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             ({
                 dataaccesstoken,
                 history_data_dump
-            } = newFunction(installationUniqueId, message.agreement_details.original_message,   message.agreement_details.tabId, message.agreement_details.frameId, message.agreement_details.redir_target, message.agreement_details.platformtoken));
+            } = newFunction(installationUniqueId, message.agreement_details.original_message, message.agreement_details.tabId, message.agreement_details.frameId, message.agreement_details.redir_target, message.agreement_details.platformtoken));
             console.log({
                 dataaccesstoken,
                 history_data_dump
@@ -753,15 +1021,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
 });
 
+// This function handles the GET request for a given URL and returns a Promise
+function doGetRequest(url, data, installationUniqueId, keyName) {
+    console.log("doGetRequest");
+    console.log(keyName);
+    return new Promise(function (resolve, reject) {
+
+        var index = 1;
+        return fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                [plugin_uuid_header_name]: installationUniqueId
+                // Add any other necessary headers
+            },
+        }).then(function (response) {
+
+            return response.json();
+
+        }).then(function (result) {
+
+            resolve({
+                [keyName]: result
+            });
+        });
+    });
+}
 
 // * create data access token*/
-function newFunction(installationUniqueId, data_request,  tabId, frameId, redir_target, platformtoken) {
+function newFunction(installationUniqueId, data_request, tabId, frameId, redir_target, platformtoken) {
     console.log("newFunction");
     console.log(installationUniqueId);
-   
-   
-    
-    
+
     console.log(redir_target);
     console.log(platformtoken);
     console.log(data_request);
@@ -831,7 +1122,7 @@ function newFunction(installationUniqueId, data_request,  tabId, frameId, redir_
                 history_data: history_data_dump
             };
             console.log(message);
-         
+
             return chrome.tabs.sendMessage(Number(tabId), {
                 frameId: Number(frameId),
                 message: message
@@ -1510,7 +1801,7 @@ async function addDataRow(url) {
 
             const userid = "";
             //console.log("deleting: " + id);
-            const message_body = '{ "browser_id":"' + browser_id + '", "url":"' + url + '", "localtime":"' + event.toISOString() + '" }';
+            const message_body = '{ "url":"' + url + '", "local_time":"' + event.toISOString() + '" }';
             console.log("DEBUG" + message_body);
             // Fetch data from web service (replace with your actual API endpoint)
             const response = await fetch(server_url + URI_plugin_user_post_click, {
@@ -1536,6 +1827,16 @@ async function addDataRow(url) {
     } else {
         console.debug("DEBUG,skipping capture of url" + url);
     }
+}
+
+function convertTimestamp(milliseconds) {
+    // Create a new Date object from the milliseconds
+    const date = new Date(milliseconds);
+
+    // Convert to ISO string and remove milliseconds and 'Z'
+    const isoStringWithoutMs = date.toISOString().replace(/\.\d{3}Z$/, '');
+
+    return isoStringWithoutMs;
 }
 
 function _base64ToArrayBuffer(base64) {
