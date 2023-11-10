@@ -122,7 +122,6 @@ async function fetchData() {
 
             // Add delete button
             const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Delete';
             deleteButton.classList.add('deleteBtn')
             deleteButton.onclick = function () {
                 // Remove the row from the table
@@ -132,9 +131,34 @@ async function fetchData() {
                 deleteDataRow(row.uuid);
 
             };
+            // Add View button
+            const viewButton = document.createElement('button');
+            viewButton.classList.add('viewBtn')
+
+            //Suspend/Active button
+            const suspendActButton = document.createElement('span');
+            suspendActButton.innerHTML= '<label><input type="checkbox" placeholder="Enter text"><span></span></label>';
+            
+            // Add classes using classList with error handling
+            const inputElement = suspendActButton.querySelector('input');
+            if (inputElement) {
+            inputElement.classList.add('input-class');
+            }
+
+            const labelElement = suspendActButton.querySelector('label');
+            if (labelElement) {
+                labelElement.classList.add('switch');
+            }
+            const spanElement = suspendActButton.querySelector('span');
+            if (spanElement) {
+            spanElement.classList.add('slider');
+            }
+
             const cell4 = newRow.insertCell(3);
             cell4.appendChild(deleteButton);
-
+            cell4.appendChild(viewButton);
+            cell4.appendChild(suspendActButton);
+            
             // Adding data-label for mobile responsive
             cell1.setAttribute('data-label', 'UTC');
             // cell2.setAttribute('data-label', 'localtime');

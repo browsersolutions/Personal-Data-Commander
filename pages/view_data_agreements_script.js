@@ -241,13 +241,36 @@ async function fetchData() {
 
       // Add delete button
       const deleteButton = document.createElement('button');
-      deleteButton.textContent = 'Delete';
+      deleteButton.classList.add('deleteBtn')
       deleteButton.onclick = function () {
         // Remove the row from the table
         newRow.remove();
         // call to API to delete row from data base
         deleteDataRowByUUID(row.uuid);
       };
+
+      // Add View button
+      const viewButton = document.createElement('button');
+      viewButton.classList.add('viewBtn')
+
+      //Suspend/Active button
+      const suspendActButton = document.createElement('span');
+      suspendActButton.innerHTML= '<label><input type="checkbox" placeholder="Enter text"><span></span></label>';
+      
+      // Add classes using classList with error handling
+      const inputElement = suspendActButton.querySelector('input');
+      if (inputElement) {
+      inputElement.classList.add('input-class');
+      }
+
+      const labelElement = suspendActButton.querySelector('label');
+      if (labelElement) {
+          labelElement.classList.add('switch');
+      }
+      const spanElement = suspendActButton.querySelector('span');
+      if (spanElement) {
+      spanElement.classList.add('slider');
+      }
 
       // Add suspend button
       const suspendButton = document.createElement('button');
@@ -269,6 +292,9 @@ async function fetchData() {
       // action buttons
       const cell7 = newRow.insertCell(6);
       cell7.appendChild(deleteButton);
+      cell7.appendChild(viewButton);      
+      cell4.appendChild(suspendActButton);
+
       const cell8 = newRow.insertCell(7);
       cell8.appendChild(suspendButton);
       const cell9 = newRow.insertCell(8);
