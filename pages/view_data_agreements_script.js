@@ -13,16 +13,16 @@ const plugin_uuid_header_name = "installationUniqueId";
 const browser_id = chrome.runtime.id;
 
 // Function to use "fetch" to delete a data row
-async function deleteDataRow(agreement_id) {
+async function deleteDataRow(agreementid) {
   try {
 
         let plugin_uuid = await chrome.storage.local.get(['installationUniqueId']);
 
 
     const userid = "";
-    //console.log("deleting: " + id);
-    const message_body = JSON.stringify({ agreement_id: agreement_id });
-    //console.log(message_body);
+    console.log("deleting agreement: " + id);
+    const message_body = JSON.stringify([{ agreementid: agreementid }]);
+    console.log(message_body);
     // Fetch data from web service (replace with your actual API endpoint)
     const response = await fetch(server_url + URI_plugin_user_delete_data_agreement, {
       method: 'POST',
@@ -50,13 +50,13 @@ async function deleteDataRow(agreement_id) {
 
 
 // Function to use "fetch" to delete a data row
-async function deleteDataRowByUUID(uuid) {
+async function deleteDataRowByUUID(agreementid) {
   try {
     let plugin_uuid = await chrome.storage.local.get(['installationUniqueId']);
 
     const userid = "";
-    const message_body = JSON.stringify({ agreement_id: uuid });
-    //console.log(message_body);
+    const message_body = JSON.stringify([{ agreementid: agreementid }]);
+   console.log(message_body);
     // Fetch data from web service (replace with your actual API endpoint)
     const response = await fetch(server_url + URI_plugin_user_delete_data_agreement, {
       method: 'POST',
@@ -211,11 +211,21 @@ async function fetchData() {
 
     // Get table body element
     const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+    
+    console.log(tableBody);
+    console.log(tableBody.rows);
+    console.log(tableBody.rows.length);
+var list = tableBody.rows;
     if (tableBody.rows.length) {
+     // for (var li = 0; li < list.length; li++) {
+       // bufView[i] = str.charCodeAt(i);
+    //    if (list[li]) deleteRow(list[li]);
+    //}
       tableBody.rows.forEach(row => {
         if (row) row.deleteRow();
       });
     }
+
     // Loop through data and populate the table
     data.forEach(row => {
       console.log(row);
@@ -231,7 +241,7 @@ async function fetchData() {
       const cell4 = newRow.insertCell(3);
       const cell5 = newRow.insertCell(4);
       const cell6 = newRow.insertCell(5);
-      cell1.textContent = row.uuid;
+      cell1.textContent = row.agreementid;
       cell2.textContent = row.createtime;
       cell3.textContent = row.lastmodifiedtime;
       cell4.textContent = row.counterparty_name;
@@ -245,7 +255,7 @@ async function fetchData() {
         // Remove the row from the table
         newRow.remove();
         // call to API to delete row from data base
-        deleteDataRowByUUID(row.uuid);
+        deleteDataRowByUUID(row.agreementid);
       };
 
       // Add suspend button
@@ -253,7 +263,7 @@ async function fetchData() {
       suspendButton.textContent = 'Suspend';
       suspendButton.onclick = function () {
         // add functionality to toggle active/suspend buttons
-        suspendByUUID(row.uuid);
+        suspendByUUID(row.agreementid);
       };
 
       // Add activate button
@@ -261,7 +271,7 @@ async function fetchData() {
       activateButton.textContent = 'Activate';
       activateButton.onclick = function () {
         // add functionality to toggle active/suspend buttons
-        activateByUUID(row.uuid);
+        activateByUUID(row.agreementid);
       };
 
 
