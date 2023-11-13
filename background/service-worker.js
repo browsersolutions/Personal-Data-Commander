@@ -1,24 +1,52 @@
+//var server_url = "https://api-dev.cybotix.no";
+//const server_url = "https://api.cybotix.no";
+var server_url = "https://api-dev.cybotix.no";
+//var server_url = "http://localhost:3000";
 
-//const server_url = "http://localhost:3000";
-const server_url = "https://api.cybotix.no";
-
-const URI_plugin_user_post_click = "/plugin_user_post_click";
-const URI_plugin_user_delete_click = "/plugin_user_delete_click";
-const URI_plugin_user_create_dataaccess_token = "/plugin_user_create_dataaccess_token";
-const URI_plugin_user_query_accesstoken_status = "/plugin_user_query_accesstoken_status";
-
-const URI_plugin_user_check_request_against_data_agreements = "/plugin_user_check_request_against_data_agreements";
-
-const URI_plugin_user_add_data_agreement = "/plugin_user_add_data_agreement";
-
-const valid_audience_values = {
+var URI_plugin_user_post_click = "/plugin_user_post_click";
+var URI_plugin_user_delete_click = "/plugin_user_delete_click";
+var URI_plugin_user_create_dataaccess_token = "/plugin_user_create_dataaccess_token";
+var URI_plugin_user_query_accesstoken_status = "/plugin_user_query_accesstoken_status";
+var URI_plugin_user_import = "/plugin_user_import"
+var plugin_user_get_all_clicks = "/plugin_user_get_all_clicks";
+var plugin_user_read_all_data_agreements = "/plugin_user_read_all_data_agreements";
+var URI_plugin_user_check_request_against_data_agreements = "/plugin_user_check_request_against_data_agreements";
+var URI_plugin_user_add_data_agreement = "/plugin_user_add_data_agreement";
+var URI_plugin_user_set_clickdata_lifetime = "/plugin_user_set_clickdata_lifetime";
+var valid_audience_values = {
     "cybotix-personal-data-commander": "1",
     "Cybotix": "1"
 };
 
-//importScripts('ajv.min.js');
-
 const plugin_uuid_header_name = "installationUniqueId";
+
+let config = {};
+
+// Fetch and load the configuration on initialization
+fetch(chrome.runtime.getURL('config.json'))
+.then(response => response.json())
+.then(data => {
+    config = data;
+    console.log("Configuration loaded:", config);
+
+    server_url = config.server_url;
+    URI_plugin_user_delete_account = config.URI_plugin_user_delete_account;
+    URI_plugin_user_post_click = config.URI_plugin_user_post_click;
+    URI_plugin_user_delete_click = config.URI_plugin_user_delete_click;
+    URI_plugin_user_create_dataaccess_token = config.URI_plugin_user_create_dataaccess_token;
+    URI_plugin_user_query_accesstoken_status = config.URI_plugin_user_query_accesstoken_status;
+    URI_plugin_user_check_request_against_data_agreements = config.URI_plugin_user_check_request_against_data_agreements;
+    URI_plugin_user_add_data_agreement = config.URI_plugin_user_add_data_agreement;
+
+    valid_audience_values = config.valid_audience_values
+
+})
+.catch(error => {
+    console.error("Error loading configuration:", error);
+});
+
+// Listen to other events and use the `config` as needed
+
 
 /*
 default rule set for declarativeNetRequest
@@ -50,7 +78,6 @@ Setting the installationUniqueId (se code below) also sets up the rules for this
 The user may reset the rules to the default ruleset at any time.
 
  */
-
 
 var domain_capture_exclusion_list = {
     "localhost": "1",
@@ -85,11 +112,90 @@ chrome.storage.local.get(['installationUniqueId'], function (result) {
         console.debug("now setting installationUniqueId (" + installationUniqueId + ")");
         chrome.storage.local.set({
             installationUniqueId: installationUniqueId
+        }).then(function (res) {
+
+            // Call to upload 24 hours of browising history to the server, in order that the user may have some starting data to "play" with.
+            // This data is subject to some immediate redactions, and will be automatically deleted within 72 hours.
+            historyImport(24);
+
         });
+        /* If installationUniqueId has not bee set in memory it means that this is a new installation.
+        It also means there is no click history in the database for this installation.
+
+        Take a look at the browser history to see if there is a click history there.
+        If so, import 48 hours of it into the database. The user may then exclude/edit/remove as desired before engaging in any sharing.
+
+
+         */
+
     } else {
         console.debug("installationUniqueId already set (" + result.installationUniqueId + ")");
     }
 });
+
+/* This imports url from the browser history into the user's data account with Cybotix.
+Once there the user may opt to share, redact or delete this data as my be appropriate.
+This function is called only once: at initial the setup of the plugin.
+ */
+function historyImport(lastHours) {
+    console.log("historyImport from the last " + lastHours + " hours");
+    // Calculate the time 48 hours ago from now in milliseconds
+    const millisecondsPerHour = 1000 * 60 * 60;
+    const startTime = (new Date()).getTime() - (lastHours * millisecondsPerHour);
+
+    console.log("timestampToEpochSeconds: " + timestampToEpochSeconds("Sun Nov 05 2023 15:49:57 GMT+0100 (Central European Standard Time)"));
+
+    var installationUniqueId;
+
+    chrome.storage.local.get(['installationUniqueId']).then(function (ins) {
+        installationUniqueId = ins.installationUniqueId;
+
+        // Search Chrome history
+        chrome.history.search({
+            'text': '', // empty string returns all history
+            'startTime': startTime,
+            'maxResults': 0 // return all results
+        }, (historyItems) => {
+            // Process the history items
+            const historyDataPromises = historyItems.map(item => {
+                    // POST request for each history item
+                    return fetch(server_url + URI_plugin_user_post_click, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [plugin_uuid_header_name]: installationUniqueId,
+                        },
+                        body: JSON.stringify({
+                            url: item.url,
+                            local_time: convertTimestamp(item.lastVisitTime)
+                        })
+                    })
+                    .then(response => response.json()) // parse JSON response
+                    .catch(error => console.error('Error sending POST request:', error));
+                });
+
+            // Wait for all POST requests to complete
+            Promise.all(historyDataPromises).then(results => {
+                console.log('All history items have been sent', results);
+            });
+        });
+
+    });
+
+}
+
+function timestampToEpochSeconds(timestamp) {
+    // Create a Date object from the timestamp string
+    const date = new Date(timestamp);
+
+    // Get the Unix timestamp in milliseconds
+    const unixTimestampMilliseconds = date.getTime();
+
+    // Convert milliseconds to seconds
+    const unixTimestampSeconds = Math.floor(unixTimestampMilliseconds / 1000);
+
+    return unixTimestampSeconds;
+}
 
 function keyExists(key, obj) {
     return obj[key] !== undefined;
@@ -427,195 +533,121 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
 
                         console.debug(isValidJSON(request));
                         // check if request is a propperly formated piece of JSON
-                        if (isValidJSON(request)) {
-                            console.debug(isObjectEmpty(request));
-                            request_payload = JSON.parse(request);
-                            console.log(request_payload);
+                        // if (isValidJSON(request)) {
+                        //console.debug(isObjectEmpty(request));
+                        request_payload = JSON.parse(request);
+                        //console.log(request_payload);
 
-                            console.log(request_payload.messagetext);
-                            console.log(request_payload.requests);
-                            var requests = request_payload.requests;
+                        // console.log(request_payload.messagetext);
+                        // console.log(request_payload.requests);
+                        // var requests = request_payload.requests;
 
-                            requests.forEach(function (req) {
-                                console.debug(req);
-                                //  clickhistory is the only valid requesttype at this time
-                                if (req.requesttype == "clickhistory") {
-                                    console.debug("has valid requesttype");
-                                    validrequest = true;
-                                    console.debug(req.requestdetails);
+                        //requests.forEach(function (req) {
+                        // console.debug(req);
+                        //  clickhistory is the only valid requesttype at this time
+                        // if (req.requesttype == "clickhistory") {
+                        console.debug("has valid requesttype");
+                        validrequest = true;
+                        //console.debug(req.requestdetails);
 
-                                    // check if the request has been granted before and if so, if it is still valid
-                                    // look up what agreements this requestor has with the user, if any.
-                                    console.debug("look for possible valid agreement already in place that might cover this data access request");
-                                    // call to the Cybotix API with the same two headers as above
 
-                                    try {
-                                        var installationUniqueId;
-                                        var token;
-                                        chrome.storage.local.get(['installationUniqueId']).then(function (ins) {
-                                            installationUniqueId = ins.installationUniqueId;
-                                            const event = new Date();
-                                            const userid = "";
-                                            // Fetch data from web service (replace with your actual API endpoint)
-                                            return fetch(server_url + URI_plugin_user_check_request_against_data_agreements, {
-                                                method: 'GET',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                    [plugin_uuid_header_name]: installationUniqueId,
-                                                    'X_HTTP_CYBOTIX_DATA_REQUEST': getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"),
-                                                    'X_HTTP_CYBOTIX_PLATFORM_TOKEN': getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN")
-                                                },
-                                            });
-                                        }).then(function (response) {
-                                            console.log(response);
-                                            // Parse JSON data
-                                            return response.json();
-                                        }).then(function (data) {
-                                            console.log(data);
-                                            console.log(data.covered);
-                                            if (data.covered == "true") {
-                                                var dataaccesstoken;
-                                                console.log("data request is covered by an existing agreement, create and issue a dataaccess token");
-                                                // fork out of the promise chain here, move to issue the access token
-                                                // call to the create-access-token API
-                                                fetch(server_url + URI_plugin_user_create_dataaccess_token, {
-                                                    method: 'GET',
-                                                    headers: {
-                                                        'Content-Type': 'application/json',
-                                                        [plugin_uuid_header_name]: installationUniqueId,
-                                                        'X_HTTP_CYBOTIX_DATA_REQUEST': getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"),
-                                                        'X_HTTP_CYBOTIX_PLATFORM_TOKEN': getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN"),
-                                                        'X_HTTP_CYBOTIX_DATA_RESTRICTIONS': "bnVsbAo="
-                                                    },
-                                                }).then(function (response) {
-                                                    console.log(response);
-                                                    return response.json();
-                                                }).then(function (data) {
-                                                    console.log(data);
-                                                    console.log(data.dataaccesstoken);
-                                                    dataaccesstoken = data.dataaccesstoken;
-                                                    // issue a redirect to the target URL, with the token as a parameter
-                                                    // send a messate back to the content script to issue the redirect
-                                                    chrome.scripting
-                                                    .executeScript({
-                                                        target: {
-                                                            tabId: details.tabId,
-                                                            frameIds: [details.frameId]
-                                                        },
-                                                        files: ["./content_scripts/send-data-access-token.js"],
-                                                    });
-                                                }).then(function (response) {
+                        // check if the request has been granted before and if so, if it is still valid
+                        // look up what agreements this requestor has with the user, if any.
+                        console.debug("look for possible valid agreement already in place that might cover this data access request");
+                        // call to the Cybotix API with the same two headers as above
 
-                                                    console.log(response);
+                        try {
+                            var installationUniqueId;
+                            var data_access_token
+                            var token;
+                            chrome.storage.local.get(['installationUniqueId']).then(function (ins) {
+                                installationUniqueId = ins.installationUniqueId;
+                                const event = new Date();
+                                const userid = "";
+                                // Fetch data from web service (replace with your actual API endpoint)
+                                return fetch(server_url + URI_plugin_user_check_request_against_data_agreements, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        [plugin_uuid_header_name]: installationUniqueId,
+                                        'X_HTTP_CYBOTIX_DATA_REQUEST': getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"),
+                                        'X_HTTP_CYBOTIX_PLATFORM_TOKEN': getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN")
+                                    },
+                                });
+                            }).then(function (response) {
+                                console.log(response);
+                                // Parse JSON data
+                                return response.json();
+                            }).then(function (data) {
+                                console.log(data);
+                                console.log(data.covered);
+                                var dataaccesstoken;
+                                var history_data_dump;
+                                if (data.covered == "true") {
 
-                                                    const message = {
-                                                        tabId: details.tabId,
-                                                        frameIds: [details.frameId],
-                                                        type: 'data_access_token',
-                                                        payload: 'Hello from background script to issue a redirect with payload.',
-                                                        newurl: redir_target,
-                                                        headername: "X_HTTP_CYBOTIX_HAVE_PLUGIN",
-                                                        headervalue: "true",
-                                                        datarequest: getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"),
-                                                        platformtoken: platformtoken,
-                                                        dataaccesstoken: dataaccesstoken,
-                                                        redir_target: redir_target
+                                    console.log("data request is covered by an existing agreement, create and issue a dataaccess token");
+                                    // fork out of the promise chain here, move to issue the access token
+                                    // call to the create-access-token API
+                                    ({
+                                        dataaccesstoken,
+                                        history_data_dump
+                                    } = newFunction(installationUniqueId, getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"), details.tabId, details.frameId, redir_target, platformtoken));
 
-                                                    };
-                                                    console.log(message);
-                                                    return chrome.tabs.sendMessage(details.tabId, message);
-                                                }).then(function (response) {
-
-                                                    if (chrome.runtime.lastError) {
-                                                        console.error(chrome.runtime.lastError);
-                                                        return;
-                                                    }
-                                                    console.log('Message sent and response received:', response);
-                                                }).then(function (two) {
-                                                    console.log(two);
-
-                                                    // chrome.tabs.sendMessage(details.tabId, message, (response) => {
-                                                    if (chrome.runtime.lastError) {
-                                                        console.error(chrome.runtime.lastError);
-                                                        return;
-                                                    }
-                                                    console.log('Message sent and response received:', response);
-                                                }).catch(function (two) {
-                                                    console.log(two);
-                                                });
-                                            } else {
-                                                // there is no data agreement, prompt the user for one
-                                                chrome.scripting
-                                                .executeScript({
-                                                    target: {
-                                                        tabId: details.tabId
-                                                    },
-                                                    files: ["./content_scripts/data_request_prompt.js"],
-                                                }).then(function (response) {
-                                                    console.log(response);
-                                                    var user_prompt_data_request_acceptance_sharedsecret = "1235u6htetb5tb354b35b456";
-                                                    let guid = () => {
-                                                        let s4 = () => {
-                                                            return Math.floor((1 + Math.random()) * 0x10000)
-                                                            .toString(16)
-                                                            .substring(1);
-                                                        }
-                                                        return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-                                                    }
-                                            
-                                                    // accept this temporarily, but the original message must be stored in the datasbe for later
-                                                    // use when creating the agreement.
-                                                    // The uui is used as a correlation id betwwwn the original request and the one the user eventually agrees to.
-
-                                                    const message = {
-                                                        tabId: details.tabId,
-                                                        type: 'datarequest',
-                                                        secret: user_prompt_data_request_acceptance_sharedsecret,
-                                                        payload: request_payload,
-                                                        original_message: incoming_data_request_message,
-                                                        platformtoken: getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN"),
-                                                        prompt_id: guid()
-                                                             };
-                                                    return chrome.tabs.sendMessage(details.tabId, message);
-                                                }).then(function (response) {
-                                                    console.log('Message sent and response received:', response);
-                                                    if (chrome.runtime.lastError) {
-                                                        console.error(chrome.runtime.lastError);
-                                                        return;
-                                                    }
-                                                    
-                                                }).catch(function (two) {
-                                                    console.log(two);
-                                                });
-
+                                } else {
+                                    // there is no data agreement covering the request, prompt the user for one
+                                    var prompt_id;
+                                    chrome.scripting
+                                    .executeScript({
+                                        target: {
+                                            tabId: details.tabId
+                                        },
+                                        files: ["./content_scripts/data_request_prompt.js"],
+                                    }).then(function (response) {
+                                        console.log(response);
+                                        var user_prompt_data_request_acceptance_sharedsecret = "1235u6htetb5tb354b35b456";
+                                        let guid = () => {
+                                            let s4 = () => {
+                                                return Math.floor((1 + Math.random()) * 0x10000)
+                                                .toString(16)
+                                                .substring(1);
                                             }
+                                            return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+                                        }
+                                        prompt_id = guid();
+                                        // accept this temporarily, but the original message must be stored in the datasbe for later
+                                        // use when creating the agreement.
+                                        // The uui is used as a correlation id betwwwn the original request and the one the user eventually agrees to.
 
-                                        });
+                                        const message = {
+                                            tabId: details.tabId,
+                                            frameId: details.frameId,
+                                            frameId: details.frameId,
+                                            redir_target: redir_target,
+                                            type: 'datarequest',
+                                            secret: user_prompt_data_request_acceptance_sharedsecret,
+                                            payload: request_payload,
+                                            original_message: incoming_data_request_message,
+                                            platformtoken: getNamedHeader(h, "X_HTTP_CYBOTIX_PLATFORM_TOKEN"),
+                                            prompt_id: prompt_id
+                                        };
+                                        return chrome.tabs.sendMessage(details.tabId, message);
+                                    }).then(function (response) {
+                                        console.log('Message sent and response received:', response);
+                                        if (chrome.runtime.lastError) {
+                                            console.error(chrome.runtime.lastError);
+                                            return;
+                                        }
 
-                                    } catch (error) {
-                                        console.error(error);
-                                    }
-
-                                    /// /plugin_user_check_request_against_data_agreements
-
-
-                                    var user_prompt_data_request_acceptance_sharedsecret = "1235u6htetb5tb354b35b456";
-
-                                    // call to active tab and have the content script present the interation page
-                                    try {}
-                                    catch (err) {
-                                        console.log(err);
-                                    }
+                                    }).catch(function (two) {
+                                        console.log(two);
+                                    });
 
                                 }
-                            });
-                        }
 
-                        if (validrequest) {
-                            // get the data agreement
-                            //   console.debug("lookup data agreements for: " + counterparty_id);
-                        } else {
-                            //  console.debug("no valid data requests");
+                            });
+
+                        } catch (error) {
+                            console.error(error);
                         }
 
                     } else if (headerNames.includes("X_HTTP_CYBOTIX_DATA_AGREEMENT_REQUEST")) {
@@ -636,7 +668,6 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
         }
     }
 
-  
 }, {
     urls: ["<all_urls>"],
     types: ["main_frame", "sub_frame"]
@@ -668,9 +699,201 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.redirect) {
             // The URL inside the plugin (e.g., an HTML file)
             const pluginURL = chrome.runtime.getURL(message.uri);
-            chrome.tabs.update(sender.tab.id, {url: pluginURL});
-          }
+            chrome.tabs.update(sender.tab.id, {
+                url: pluginURL
+            });
+        }
+    } else if (message.type == "delete_click") {
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
 
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+
+            del_mess = {
+                browserid: installationUniqueId
+            }
+
+
+
+        });
+  } else if (message.type == "set_click_data_expiration_period") {
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+
+            del_mess = {
+                browserid: installationUniqueId
+            }
+
+  //          # set expiration time for click data (set expiration time to be equal to the utc timestamp plus the provided value)
+
+//            curl -X POST -H "Content-Type: application/json"  -H "installationUniqueId: 6596c84b-544c-98e3-6ce2-8ccc1b334055"  -d '{  "days":5, "hours":1}' http://localhost:3000/plugin_user_set_clickdata_lifetime
+    
+            // Fetch data from web service (replace with your actual API endpoint)
+
+const lifetime_message = {  "days":message.selectedDayCount, "hours":0}
+
+            return fetch(server_url + URI_plugin_user_set_clickdata_lifetime, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [plugin_uuid_header_name]: installationUniqueId
+                },
+                body: JSON.stringify(lifetime_message) // example IDs, replace as necessary
+            });
+            
+        });
+        return true;
+ 
+    } else if (message.type == "deleteAccountData") {
+        console.log("deleteAccountData");
+        // deletes all account data
+        // This action removes the user from the Cybotix platform
+        // The user can be completely restored from backup data
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+
+            del_mess = {
+                browserid: installationUniqueId
+            }
+
+            // Fetch data from web service (replace with your actual API endpoint)
+
+            return fetch(server_url + URI_plugin_user_delete_account, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [plugin_uuid_header_name]: installationUniqueId
+                },
+                body: JSON.stringify(del_mess) // example IDs, replace as necessary
+            });
+        }).then(function (response) {
+            console.log(response);
+
+            // Check for errors
+            try {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        });
+
+    } else if (message.type == "importData") {
+        console.log("importData");
+        console.log(message.data);
+
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+
+            // Fetch data from web service (replace with your actual API endpoint)
+
+            return fetch(server_url + URI_plugin_user_import, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [plugin_uuid_header_name]: installationUniqueId
+                },
+                body: JSON.stringify(message.data) // example IDs, replace as necessary
+            });
+        }).then(function (response) {
+            console.log(response);
+
+            // Check for errors
+            try {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        });
+
+        // Handle the imported data
+        //message.data.forEach(obj => {
+
+
+        //const url = determineUrl(obj); // Implement this function based on your logic
+        //doPostRequest(obj, url);
+        //});
+        return true;
+
+    } else if (message.type == "startBackup") {
+        console.log("startBackup");
+        //var installationUniqueId = "6596c84b-544c-98e3-6ce2-8ccc1b334055"; // = await chrome.storage.local.get(['installationUniqueId']);
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+        chrome.storage.local.get(['installationUniqueId']).then(function (ins) {
+            installationUniqueId = ins.installationUniqueId;
+
+            const urls = message.urls;
+            const all_urls = [{
+                    url: server_url + plugin_user_get_all_clicks,
+                    method: 'GET',
+                    tag: "clickhistory"
+                }, {
+                    url: server_url + plugin_user_read_all_data_agreements,
+                    method: 'GET',
+                    tag: "data_agreements"
+                }
+            ];
+            const backupData = [];
+
+            // Perform all POST requests
+            //Promise.all(urls.map(url => doGetRequest(url, message.data, installationUniqueId)))
+            Promise.all(all_urls.map(endpoint => doGetRequest(endpoint.url, message.data, installationUniqueId, endpoint.tag)))
+            .then(results => {
+                console.log('All requests completed');
+                console.log(JSON.stringify(results));
+
+                // Create an object to hold the transformed data
+                const transformedData = {};
+                // Iterate over each element in the results array
+                results.forEach(item => {
+                    // For each property in the item, add it to the transformed data
+                    for (const[key, value]of Object.entries(item)) {
+                        // Assume each key is the type of data and value is an array of data items
+                        // Ensure the key exists in the transformedData object
+                        transformedData[key] = transformedData[key] || [];
+
+                        // Concatenate the current array of data to the existing array
+                        // Use spread operator to create a new array combining both
+                        transformedData[key] = [...transformedData[key], ...value];
+                    }
+                });
+
+                // Process results and send them back to the popup script
+                console.log(JSON.stringify(transformedData));
+                sendResponse({
+                    backupData: transformedData
+                });
+            })
+            .catch(error => {
+                console.error('Error during backup:', error);
+                sendResponse({
+                    error: 'Backup failed'
+                });
+            });
+        });
+        // Return true to indicate an asynchronous response
+        return true;
 
     } else if (message.type == "accept_single_datarequest") {
 
@@ -685,10 +908,46 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.log((JSON.parse(base642str(message.agreement_details.original_message))).requests);
 
         // include the original agreement request
-// lookup values from the platform token
-//console.log(details);
-var data_grants = (JSON.parse(base642str(message.agreement_details.original_message))).requests;
-console.log(data_grants);
+        // lookup values from the platform token
+        //console.log(details);
+        var data_grants = (JSON.parse(base642str(message.agreement_details.original_message))).requests;
+        console.log(data_grants);
+
+        var notbefore = message.agreement_details.restrictions.notbefore;
+        console.log("notbefore")
+        console.log(notbefore)
+        console.log((notbefore == ""))
+
+        if (notbefore == "") {
+            notbefore = new Date();
+        }
+        var notafter = message.agreement_details.restrictions.notafter;
+        console.log("notafter: " + notafter);
+        console.log(notafter);
+
+        if (notafter == "") {
+            notafter = new Date();
+            const days = message.agreement_details.restrictions.days;
+            if (!Number.isInteger(days)) {
+                throw new Error('The days parameter must be an integer.');
+            }
+            const hours = message.agreement_details.restrictions.hours;
+            if (!Number.isInteger(hours)) {
+                throw new Error('The hours parameter must be an integer.');
+            }
+            let currentDate = new Date();
+
+            // Adding days
+            currentDate.setDate(currentDate.getDate() + days);
+
+            // Adding hours
+            currentDate.setHours(currentDate.getHours() + hours);
+
+        }
+
+        // Use notbefore and notafter is available, if not
+        // use now() plus days and hours
+
         var agreement = {
             principal_name: "2342",
             principal_id: "2342",
@@ -696,11 +955,11 @@ console.log(data_grants);
             counterparty_id: "65232",
             platformtoken: message.agreement_details.platformtoken,
             data_grants: data_grants,
-            notebefore: message.agreement_details.notebefore,
-            notafter: message.agreement_details.notafter,
+            notbefore: notbefore,
+            notafter: notafter,
             original_request: message.agreement_details.original_message
         };
-
+        console.log(agreement);
         // store the agreement in the database
 
         var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
@@ -716,7 +975,7 @@ console.log(data_grants);
             const userid = "";
             //console.log("deleting: " + id);
             const message_body = JSON.stringify(agreement);
-            console.log("DEBUG" + message_body);
+            console.log("adding data agreement: " + message_body);
             // Fetch data from web service (replace with your actual API endpoint)
 
             return fetch(server_url + URI_plugin_user_add_data_agreement, {
@@ -729,26 +988,252 @@ console.log(data_grants);
             });
         }).then(function (response) {
             console.log(response);
-            
-            // Check for errors
-            try{
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-         }catch(err){
-                console.log(err);
-         }
 
+            // Check for errors
+            try {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+            console.log("responding back to content script");
             sendResponse({
                 type: "acknowledgment",
                 payload: "ack from background script"
             });
 
+            // there has now been created a data agreement, issue a data access token
+            console.log("a data agreement has now been created, issue a data access token");
+            // pull out data access token
+            ({
+                dataaccesstoken,
+                history_data_dump
+            } = newFunction(installationUniqueId, message.agreement_details.original_message, message.agreement_details.tabId, message.agreement_details.frameId, message.agreement_details.redir_target, message.agreement_details.platformtoken));
+            console.log({
+                dataaccesstoken,
+                history_data_dump
+            });
+
         });
-
     }
-
+    // return true, to make calls from content scripts wait.
+    return true;
 });
+
+// This function handles the GET request for a given URL and returns a Promise
+function doGetRequest(url, data, installationUniqueId, keyName) {
+    console.log("doGetRequest");
+    console.log(keyName);
+    return new Promise(function (resolve, reject) {
+
+        var index = 1;
+        return fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                [plugin_uuid_header_name]: installationUniqueId
+                // Add any other necessary headers
+            },
+        }).then(function (response) {
+
+            return response.json();
+
+        }).then(function (result) {
+
+            resolve({
+                [keyName]: result
+            });
+        });
+    });
+}
+
+// * create data access token*/
+function newFunction(installationUniqueId, data_request, tabId, frameId, redir_target, platformtoken) {
+    console.log("newFunction");
+    console.log(installationUniqueId);
+
+    console.log(redir_target);
+    console.log(platformtoken);
+    console.log(data_request);
+    console.log(tabId);
+    var history_data_dump;
+    var dataaccesstoken;
+    return new Promise(function (resolve, reject) {
+
+        fetch(server_url + URI_plugin_user_create_dataaccess_token, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                [plugin_uuid_header_name]: installationUniqueId,
+                'X_HTTP_CYBOTIX_DATA_REQUEST': data_request,
+                'X_HTTP_CYBOTIX_PLATFORM_TOKEN': platformtoken,
+                'X_HTTP_CYBOTIX_DATA_RESTRICTIONS': "bnVsbAo="
+            },
+        }).then(function (response) {
+            console.log(response);
+            return response.json();
+        }).then(function (data) {
+            //console.log(data);
+            console.log("have data accesstoken: " + data.dataaccesstoken);
+            dataaccesstoken = data.dataaccesstoken;
+
+            // call the local history API to get the data.
+            // retrieve the time limites from the data request and data tokens
+            const grants = getGrantsFromDataAccessToken(dataaccesstoken);
+            console.log(grants);
+
+            return getSearchHistoryForItems(grants);
+
+        }).then(function (historyItems) {
+            console.log(historyItems);
+
+            //history_data_dump = historyItems.filter(item => regexPattern.test(item.url));
+            history_data_dump = filterKeysFromArray(historyItems, ['url', 'title', 'lastVisitTime', 'typedCount', 'visitCount']);
+            console.log(history_data_dump);
+
+            // issue a redirect to the target URL, with the token as a parameter
+            // send a messate back to the content script to issue the redirect
+            return chrome.scripting
+            .executeScript({
+                target: {
+                    tabId: Number(tabId),
+                    frameIds: [Number(frameId)]
+                },
+                files: ["./content_scripts/send-data-access-token.js"],
+            });
+        }).then(function (response) {
+
+            console.log(response);
+
+            const message = {
+                tabId: Number(tabId),
+                frameId: Number(frameId),
+                frameIds: [Number(frameId)],
+                type: 'data_access_token',
+                payload: 'Hello from background script to issue a redirect with payload.',
+                newurl: redir_target,
+                headername: "X_HTTP_CYBOTIX_HAVE_PLUGIN",
+                headervalue: "true",
+                datarequest: data_request,
+                platformtoken: platformtoken,
+                dataaccesstoken: dataaccesstoken,
+                redir_target: redir_target,
+                history_data: history_data_dump
+            };
+            console.log(message);
+
+            return chrome.tabs.sendMessage(Number(tabId), {
+                frameId: Number(frameId),
+                message: message
+            });
+        }).then(function (response) {
+            console.log('Message sent and response received:', response);
+
+            if (chrome.runtime.lastError) {
+                console.error(chrome.runtime.lastError);
+                return;
+            }
+        }).then(function (resp) {
+            console.log(resp);
+
+            if (chrome.runtime.lastError) {
+                console.error(chrome.runtime.lastError);
+                return;
+            }
+        }).catch(function (two) {
+            console.log(two);
+        });
+        resolve({
+            dataaccesstoken,
+            history_data_dump
+        });
+    });
+}
+
+function getSearchHistoryForItems(data) {
+    console.log("getSearchHistoryForItems");
+    return new Promise((resolve, reject) => {
+        const promises = data.map(item => {
+                const timeValue = item.requestdetails.time;
+                const filter = item.requestdetails.filter;
+                const[, num, unit] = timeValue.match(/now-(\d+)([a-z]+)/) || [];
+                let milliseconds;
+                switch (unit) {
+                case 'sec':
+                    milliseconds = num * 1000;
+                    break;
+                case 'min':
+                    milliseconds = num * 60 * 1000;
+                    break;
+                case 'hr':
+                    milliseconds = num * 60 * 60 * 1000;
+                    break;
+                default:
+                    return reject(new Error('Unknown time unit'));
+                }
+                const now = Date.now();
+                const lowerLimit = (now - milliseconds); // Convert to seconds
+                const upperLimit = now; // Convert to seconds
+                console.log("lowerLimit: " + lowerLimit);
+                console.log("upperLimit: " + upperLimit);
+                console.log("filter: " + filter);
+
+                //return searchHistory(lowerLimit, upperLimit, item.requestdetails.filter);
+
+                //return searchHistory({
+                //    text: '',
+                //     startTime: lowerLimit,
+                //     endTime: upperLimit,
+                //     maxResults: 200
+                // });
+                return filterHistory(lowerLimit, upperLimit, filter);
+            });
+
+        // Wait for all promises to complete and combine their results
+        Promise.all(promises).then(results => {
+            console.log(results.flat());
+
+            resolve(results.flat());
+        }).catch(error => {
+            reject(error);
+        });
+    });
+}
+
+function filterHistory(startTime, endTime, pattern) {
+    return new Promise((resolve, reject) => {
+        chrome.history.search({
+            text: '',
+            startTime: startTime,
+            endTime: endTime,
+            maxResults: 1000
+        }, function (items) {
+            // If chrome.runtime.lastError exists, it means there was an error
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError));
+                return;
+            }
+
+            const regex = new RegExp(pattern);
+            const filteredItems = items.filter(item => regex.test(item.url));
+
+            resolve(filteredItems);
+        });
+    });
+}
+
+function searchHistory(options) {
+    return new Promise((resolve, reject) => {
+        chrome.history.search(options, (results) => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError));
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
 
 function executeScriptOnTab(tabId, scriptName) {
     console.log("executeScriptOnTab");
@@ -803,6 +1288,14 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
     urls: ['<all_urls>']
 },
     ['requestHeaders', 'extraHeaders']);
+
+function getGrantsFromDataAccessToken(token) {
+    console.log("getGrantsFromDataAccessToken");
+    const res = (JSON.parse(base642str((JSON.parse(base642str(token.replace(/-/g, '+').replace(/_/g, '/').split('.')[1]))).grant))).grants;
+    console.log(res);
+    return res;
+
+}
 
 function base64UrlDecode(str) {
     // Convert Base64Url to Base64 by replacing - with + and _ with /
@@ -1308,7 +1801,7 @@ async function addDataRow(url) {
 
             const userid = "";
             //console.log("deleting: " + id);
-            const message_body = '{ "browser_id":"' + browser_id + '", "url":"' + url + '", "localtime":"' + event.toISOString() + '" }';
+            const message_body = '{ "url":"' + url + '", "local_time":"' + event.toISOString() + '" }';
             console.log("DEBUG" + message_body);
             // Fetch data from web service (replace with your actual API endpoint)
             const response = await fetch(server_url + URI_plugin_user_post_click, {
@@ -1334,6 +1827,16 @@ async function addDataRow(url) {
     } else {
         console.debug("DEBUG,skipping capture of url" + url);
     }
+}
+
+function convertTimestamp(milliseconds) {
+    // Create a new Date object from the milliseconds
+    const date = new Date(milliseconds);
+
+    // Convert to ISO string and remove milliseconds and 'Z'
+    const isoStringWithoutMs = date.toISOString().replace(/\.\d{3}Z$/, '');
+
+    return isoStringWithoutMs;
 }
 
 function _base64ToArrayBuffer(base64) {
@@ -1375,4 +1878,20 @@ function str2base64(str) {
 }
 function base642str(base64) {
     return atob(base64);
+}
+
+/* iterate through a array of JSON objects. for each object, remove all keys not on a whitelist*/
+function filterKeysFromArray(jsonArray, whitelist) {
+    return jsonArray.map(item => {
+        let filteredItem = {};
+        whitelist.forEach(key => {
+            if (item.hasOwnProperty(key)) {
+                // pass
+                console.log("pass key: " + key)
+                filteredItem[key] = item[key];
+            }
+        });
+        console.log(filteredItem);
+        return filteredItem;
+    });
 }

@@ -1,6 +1,5 @@
 
-//const server_url = "http://localhost:3000";
-const server_url = "https://api.cybotix.no";
+const server_url = "https://api-dev.cybotix.no";
 
 const URI_plugin_user_read_all_agreements = "/plugin_user_read_all_data_agreements";
 const URI_plugin_user_delete_data_agreement = "/plugin_user_delete_data_agreement";

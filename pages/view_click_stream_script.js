@@ -1,6 +1,6 @@
 
-//const server_url = "http://localhost:3000";
-const server_url = "https://api.cybotix.no";
+
+const server_url = "https://api-dev.cybotix.no";
 
 
 const URI_plugin_user_get_all_clicks = "/plugin_user_get_all_clicks";
@@ -13,13 +13,13 @@ const plugin_uuid_header_name = "installationUniqueId";
 // Function to use "fetch" to delete a data row
 async function deleteDataRow(uuid) {
     try {
-        console.log("deleteing row: " + uuid);
+        console.log("deleting row: " + uuid);
         // userid is collected from authenticated session.
         const userid = "";
         let plugin_uuid = await chrome.storage.local.get(['installationUniqueId']);
 
  
-        const message_body = JSON.stringify({ uuid: uuid });
+        const message_body = JSON.stringify({ linkid: uuid });
         // Fetch data from web service (replace with your actual API endpoint)
         const response = await fetch(server_url + URI_plugin_user_delete_click, {
             method: 'POST',
@@ -87,7 +87,7 @@ async function fetchData() {
         }
         // Loop through data and populate the table
         data.forEach(row => {
-            //        console.log(row);
+            //       console.log(row);
             //        console.log(row.url);
 
             // Create new row
@@ -99,8 +99,8 @@ async function fetchData() {
             const cell3 = newRow.insertCell(2);
             // const cell4 = newRow.insertCell(3);
 
-            cell1.textContent = row.uuid;
-            cell1.setAttribute("name", "uuid")
+            cell1.textContent = row.linkid;
+            cell1.setAttribute("name", "linkid")
             cell2.textContent = row.utc;
 
             // cell3.textContent = row.url;
@@ -128,7 +128,7 @@ async function fetchData() {
                 newRow.remove();
               
               // call to API to delete row from data base
-                deleteDataRow(row.uuid);
+                deleteDataRow(row.linkid);
 
             };
             // Add View button
