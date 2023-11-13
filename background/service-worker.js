@@ -789,6 +789,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         });
         return true;
+    } else if (message.type == "suspendAllDataAgreements") {
+        console.log("suspendAllDataAgreements");
+
+return true;
+
     } else if (message.type == "deleteAccount") {
         console.log("deleteAccount");
         // deletes the account and all account data
