@@ -15,6 +15,12 @@ var plugin_user_read_all_data_agreements = "/plugin_user_read_all_data_agreement
 var URI_plugin_user_check_request_against_data_agreements = "/plugin_user_check_request_against_data_agreements";
 var URI_plugin_user_add_data_agreement = "/plugin_user_add_data_agreement";
 var URI_plugin_user_set_clickdata_lifetime = "/plugin_user_set_clickdata_lifetime";
+const URL_plugin_user_deactivate_agreements = "/plugin_user_deactivate_agreements";
+const URL_plugin_user_activate_agreements = "/plugin_user_activate_agreements";
+const URL_plugin_user_set_agreement_active_status = "/plugin_user_set_agreement_active_status";
+
+
+
 var valid_audience_values = {
     "cybotix-personal-data-commander": "1",
     "Cybotix": "1"
@@ -788,9 +794,67 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
 
         });
+
         return true;
     } else if (message.type == "suspendAllDataAgreements") {
         console.log("suspendAllDataAgreements");
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+console.log(message.details);
+          
+
+            //          # set expiration time for click data (set expiration time to be equal to the utc timestamp plus the provided value)
+
+            //const suspend_message = [{  "agreementid":"894e89f3-b3a3-4d02-8833-39019b179df3", "agreementid":"e03164d9-e74d-4a0d-a9ac-8e35f0b2c50e"}]
+
+            //console.log(suspend_message);
+            return fetch(server_url + URL_plugin_user_deactivate_agreements, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [plugin_uuid_header_name]: installationUniqueId
+                },
+                body: JSON.stringify(message.details)
+            });
+
+        });
+
+
+
+        return true;
+} else if (message.type == "activateAllDataAgreements") {
+    console.log("activateAllDataAgreements");
+    var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+
+    chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+        //installationUniqueId = result;
+        console.log(result);
+
+        installationUniqueId = result.installationUniqueId;
+console.log(message.details);
+      
+
+        //          # set expiration time for click data (set expiration time to be equal to the utc timestamp plus the provided value)
+
+        //const suspend_message = [{  "agreementid":"894e89f3-b3a3-4d02-8833-39019b179df3", "agreementid":"e03164d9-e74d-4a0d-a9ac-8e35f0b2c50e"}]
+
+        //console.log(suspend_message);
+        return fetch(server_url + URL_plugin_user_activate_agreements, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [plugin_uuid_header_name]: installationUniqueId
+            },
+            body: JSON.stringify(message.details)
+        });
+
+    });
+
 
 return true;
 

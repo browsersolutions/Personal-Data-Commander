@@ -417,8 +417,43 @@ fetchData();
 
 document.getElementById('dataAgreementsRefreshButton').addEventListener('click', fetchData());
 
-document.getElementById('dataAgreementsSuspendAllButton').addEventListener('click', suspendAll());
 
-document.getElementById('dataAgreementsActivateAllButton').addEventListener('click', activateAll());
+document.getElementById('dataAgreementsActivateAllButton').addEventListener('click', function() {
+  // Send a message to the service worker to perform the backup
+  chrome.runtime.sendMessage({
+    type: 'activateAllDataAgreements'
+  }, response => {
+      console.log(response);
+    
+  });
+});
 
 
+document.getElementById('dataAgreementsSuspendAllButton').addEventListener('click', function() {
+  // Send a message to the service worker to perform the backup
+
+  // collect together a list of all agreement ids
+console.log(extractAgreementIds());
+
+  chrome.runtime.sendMessage({
+    type: 'suspendAllDataAgreements',
+    details: extractAgreementIds()
+  }, response => {
+      console.log(response);
+    
+  });
+});
+
+
+function extractAgreementIds() {
+  const table = document.getElementById('dataTable');
+  const rows = table.getElementsByTagName('tbody')[0].rows;
+  const agreementIds = [];
+
+  for (let i = 0; i < rows.length; i++) {
+      const agreementId = rows[i].cells[0].textContent;
+      agreementIds.push({ "agreementid": agreementId });
+  }
+
+  return agreementIds;
+}
