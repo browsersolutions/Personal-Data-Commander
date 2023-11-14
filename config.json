@@ -1,15 +1,25 @@
 {
-   "server_url": "https://api-dev.cybotix.no",
-   "URI_plugin_user_post_click": "/plugin_user_post_click",
-   "URI_plugin_user_delete_account": "/plugin_user_delete_aaccount",
-"URI_plugin_user_delete_click": "/plugin_user_delete_click",
-"URI_plugin_user_create_dataaccess_token": "/plugin_user_create_dataaccess_token",
-"URI_plugin_user_query_accesstoken_status": "/plugin_user_query_accesstoken_status",
-"URI_plugin_user_check_request_against_data_agreements": "/plugin_user_check_request_against_data_agreements",
-"URI_plugin_user_add_data_agreement": "/plugin_user_add_data_agreement",
-"valid_audience_values": {
-    "cybotix-personal-data-commander": "1",
-    "Cybotix": "1"
-}
-
+    "server_url": "https://api-dev.cybotix.no",
+    "URI_plugin_user_post_click": "/plugin_user_post_click",
+    "URI_plugin_user_delete_account": "/plugin_user_delete_aaccount",
+    "URI_plugin_user_delete_click": "/plugin_user_delete_click",
+    "URI_plugin_user_create_dataaccess_token": "/plugin_user_create_dataaccess_token",
+    "URI_plugin_user_query_accesstoken_status": "/plugin_user_query_accesstoken_status",
+    "URI_plugin_user_check_request_against_data_agreements": "/plugin_user_check_request_against_data_agreements",
+    "URI_plugin_user_add_data_agreement": "/plugin_user_add_data_agreement",
+    "platform_tokens": {
+        "signature_validation_key":"-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy3Z5wJ/CelzVSbFj2Kiq\nS3IrKvBv5tE5ZJyegV1a4kAaRQTnlAdy6GBHD36Ep3l7VKiXgxMlCvLopeIUJtni\ndkH+YuMtwBWtbs9q9xoXCGf5m/YH+ZXF6b5QolIhYkduZMC8F0ZSKBJt+8ATMTX8\nHbzeq43u8rHi2KHjsRQFDi88Z6WtKTT31MiAwE+WrwjgfFjtSqkQFbgM8LnTQ1Iv\n4v8sSYzp2kN2PEn28P2GR8xiLTDEhdswoyL44z6R7OxejIm1UZGz2mp40YH/240u\nzAE5hie/F5eUqSASZDT1CHQrx0Edf4t2wHYZ/wXU+BIEhXWjckk9V7GPNwXh+AZJ\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "accepted_audiences": {
+            "Cybotix": 1,
+            "cybotix-personal-data-commander": 1,
+            "https://api-dev.cybotix.no/data": 1,
+            "https://api-test.cybotix.no/data": 1,
+            "https://api.cybotix.no/development/data": 1
+        },
+        "accepted_issuers": {
+            "https://api.cybotix.no": 1,
+            "https://api-dev.cybotix.no": 1,
+            "https://api.cybotix.no/development/data": 1
+        }
+    }
 }

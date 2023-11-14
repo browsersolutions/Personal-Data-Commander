@@ -58,6 +58,18 @@
           
         });
       });
+
+
+      
+      document.getElementById('suspendAllAgreements').addEventListener('click', function() {
+        // Send a message to the service worker to perform the backup
+        chrome.runtime.sendMessage({
+          type: 'suspendAllDataAgreements'
+        }, response => {
+            console.log(response);
+          
+        });
+      });
       
 
       document.getElementById('importButton').addEventListener('click', () => {

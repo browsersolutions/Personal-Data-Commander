@@ -1,6 +1,4 @@
 //var server_url = "https://api-dev.cybotix.no";
-
-
 //const server_url = "https://api.cybotix.no";
 var server_url = "https://api-dev.cybotix.no";
 //var server_url = "http://localhost:3000";
@@ -10,17 +8,11 @@ var URI_plugin_user_delete_click = "/plugin_user_delete_click";
 var URI_plugin_user_create_dataaccess_token = "/plugin_user_create_dataaccess_token";
 var URI_plugin_user_query_accesstoken_status = "/plugin_user_query_accesstoken_status";
 var URI_plugin_user_import = "/plugin_user_import"
-    var plugin_user_get_all_clicks = "/plugin_user_get_all_clicks";
+var plugin_user_get_all_clicks = "/plugin_user_get_all_clicks";
 var plugin_user_read_all_data_agreements = "/plugin_user_read_all_data_agreements";
 var URI_plugin_user_check_request_against_data_agreements = "/plugin_user_check_request_against_data_agreements";
 var URI_plugin_user_add_data_agreement = "/plugin_user_add_data_agreement";
 var URI_plugin_user_set_clickdata_lifetime = "/plugin_user_set_clickdata_lifetime";
-const URL_plugin_user_deactivate_agreements = "/plugin_user_deactivate_agreements";
-const URL_plugin_user_activate_agreements = "/plugin_user_activate_agreements";
-const URL_plugin_user_set_agreement_active_status = "/plugin_user_set_agreement_active_status";
-
-
-
 var valid_audience_values = {
     "cybotix-personal-data-commander": "1",
     "Cybotix": "1"
@@ -28,25 +20,33 @@ var valid_audience_values = {
 
 const plugin_uuid_header_name = "installationUniqueId";
 
-var config = {};
+let config = {};
 
 // Fetch and load the configuration on initialization
-const configURL = chrome.runtime.getURL('./config.json');
-fetch(configURL)
+fetch(chrome.runtime.getURL('config.json'))
 .then(response => response.json())
 .then(data => {
+    config = data;
+    console.log("Configuration loaded:", config);
 
-    console.log('Config:', data);
-    config = JSON.parse(JSON.stringify(data));
-    // You can now use your config object
-    console.log(JSON.stringify(config));
+    server_url = config.server_url;
+    URI_plugin_user_delete_account = config.URI_plugin_user_delete_account;
+    URI_plugin_user_post_click = config.URI_plugin_user_post_click;
+    URI_plugin_user_delete_click = config.URI_plugin_user_delete_click;
+    URI_plugin_user_create_dataaccess_token = config.URI_plugin_user_create_dataaccess_token;
+    URI_plugin_user_query_accesstoken_status = config.URI_plugin_user_query_accesstoken_status;
+    URI_plugin_user_check_request_against_data_agreements = config.URI_plugin_user_check_request_against_data_agreements;
+    URI_plugin_user_add_data_agreement = config.URI_plugin_user_add_data_agreement;
+
+    valid_audience_values = config.valid_audience_values
 
 })
-.catch(error => console.error('Error reading config:', error));
+.catch(error => {
+    console.error("Error loading configuration:", error);
+});
 
 // Listen to other events and use the `config` as needed
 
-console.log(JSON.stringify(config));
 
 /*
 default rule set for declarativeNetRequest
@@ -79,74 +79,173 @@ The user may reset the rules to the default ruleset at any time.
 
  */
 
-function base64urlEncode(str) {
-    return str2base64(str);
-    return btoa(str)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+
+var signAlgorithm = {
+    name: "RSASSA-PKCS1-v1_5",
+    hash: {
+      name: "SHA-256"
+    },
+    modulusLength: 2048,
+    extractable: false,
+    publicExponent: new Uint8Array([1, 0, 1])
+  }
+
+
+const jwt = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjoiMS4wIiwiaXNzIjoiaHR0cHM6Ly9hcGkuY3lib3RpeC5ubyIsInN1YiI6ImV5SnVZVzFsSWpvaVEyOXRjR0Z1ZVNCT1lXMWxJR2x1WXk0aUxDSnBaQ0k2SW1Vek1XTmpNMkZoTFdKaFpHTXROR0kxTkMwNU56VXpMVGRoWm1ZM1kySTJNemsxTUNKOSIsImF1ZCI6IkN5Ym90aXgiLCJrZXkiOlsiLS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS1cclxuTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF5M1o1d0ovQ2VselZTYkZqMktpcVxyXG5TM0lyS3ZCdjV0RTVaSnllZ1YxYTRrQWFSUVRubEFkeTZHQkhEMzZFcDNsN1ZLaVhneE1sQ3ZMb3BlSVVKdG5pXHJcbmRrSCtZdU10d0JXdGJzOXE5eG9YQ0dmNW0vWUgrWlhGNmI1UW9sSWhZa2R1Wk1DOEYwWlNLQkp0KzhBVE1UWDhcclxuSGJ6ZXE0M3U4ckhpMktIanNSUUZEaTg4WjZXdEtUVDMxTWlBd0UrV3J3amdmRmp0U3FrUUZiZ004TG5UUTFJdlxyXG40djhzU1l6cDJrTjJQRW4yOFAyR1I4eGlMVERFaGRzd295TDQ0ejZSN094ZWpJbTFVWkd6Mm1wNDBZSC8yNDB1XHJcbnpBRTVoaWUvRjVlVXFTQVNaRFQxQ0hRcngwRWRmNHQyd0hZWi93WFUrQklFaFhXamNrazlWN0dQTndYaCtBWkpcclxuZXdJREFRQUJcclxuLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tXHJcbiJdLCJqdGkiOiJkYjk0NTI1Zi1jMmFmLTQzOTgtYTM5ZS1hZWU5OGRiYzdkMzIiLCJpYXQiOjE2OTk2MjAwNjUsIm5iZiI6MTY5OTYyMDA2NSwiZXhwIjoxNzAyMjEyMDY1fQ.jVOozeqi6RYcxIN2NyJmEEJzG-k1C-PGlq__nuDeqEJjvkplkQwzkA1dVeaTLD15ZKMT5hS9cONgTDHlRpPgNeIrMvaomnTLIAl8xrQt2VKwa4qyaMk5wqszgF65Gg-vKjfK_CnUh-YjP9isdLPUhQHOfDmV8I8HaE_REalHdjPYt_zt3CgsatCX-rRr6Ma9jI0mu_zv0NsXvAgS6kEJSCPceWMjR8j6Vkt0tuHT9ASTlEmEXvxHyJnfty8FuWogu39fqr6moOaG5LjBRZgDbfkgPJAGIzsR3RQyvUtHCmIkSaHo6vcVeN1G8vMrmyOl1FApoeySXKX33qzKhjuMaQ";
+
+function importPublicKey3(pem) {
+    console.log("importPublicKey3");
+    return new Promise((resolve, reject) => {
+        try {
+            const pemHeader = "-----BEGIN PUBLIC KEY-----";
+            const pemFooter = "-----END PUBLIC KEY-----";
+            const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length);
+            console.log(pemContents );
+            console.log(pemContents.replace(/\s+/g, '') );
+            
+            const binaryDerString = atob(pemContents.replace(/\s+/g, ''));
+            const binaryDer = str2ab(binaryDerString);
+
+            crypto.subtle.importKey(
+                "spki",
+                binaryDer,
+                { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } },
+                false,
+                ["verify"]
+            )
+            .then(function(resolve){
+                console.log(resolve);
+            })
+            .catch(reject);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+function verifyJwt8(token, publicKey) {
+    console.log("verifying jwt: "+token);
+    return new Promise((resolve, reject) => {
+        const [headerB64, payloadB64, signatureB64] = token.replace(/\-/g, '+').replace(/_/g, '/').split('.');
+        const signatureUint8Array = new Uint8Array(urlBase64Decode(signatureB64).split('').map(c => c.charCodeAt(0)));
+        const signedContent = str2ab(headerB64 + '.' + payloadB64);
+        //const signedContent = headerB64 + '.' + payloadB64;
+
+        importPublicKey7(publicKey)
+            .then(function(cryptoKey){
+                console.log(cryptoKey);
+                console.log(signatureUint8Array);
+                console.log(signedContent);
+                return  crypto.subtle.verify(
+                 { name: "RSASSA-PKCS1-v1_5" },
+                cryptoKey,
+                signatureUint8Array,
+                signedContent
+            );
+        }).then(function(isValid){
+            console.log(isValid);
+
+                if (isValid) {
+                    resolve(parseJwt(token));
+                } else {
+                    reject(new Error('Invalid JWT signature'));
+                }
+            })
+            .catch(function(err){
+                console.log(err);
+                reject;
+            });
+    });
 }
 
-function base64urlDecode(str) {
-    return atob(str.replace(/-/g, '+').replace(/_/g, '/'));
-}
 
-function str2ab(str) {
-    const buf = new ArrayBuffer(str.length);
-    const bufView = new Uint8Array(buf);
-    for (let i = 0; i < str.length; i++) {
-        bufView[i] = str.charCodeAt(i);
+function convertPemToBinary(pem) {
+    console.log(pem);
+    var lines = pem.split('\n')
+    var encoded = ''
+    for(var i = 0;i < lines.length;i++){
+      if (lines[i].trim().length > 0 &&
+          lines[i].indexOf('-BEGIN RSA PRIVATE KEY-') < 0 &&
+          lines[i].indexOf('-BEGIN RSA PUBLIC KEY-') < 0 &&
+          lines[i].indexOf('-END RSA PRIVATE KEY-') < 0 &&
+          lines[i].indexOf('-END RSA PUBLIC KEY-') < 0) {
+        encoded += lines[i].trim()
+      }
     }
-    return buf;
+
+    const pemHeader = "-----BEGIN PUBLIC KEY-----";
+    const pemFooter = "-----END PUBLIC KEY-----";
+    const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length).replace(/\s+/g, '');
+   
+
+    return base64StringToArrayBuffer(pemContents)
+  }
+
+  // https://gist.github.com/groundrace/b5141062b47dd96a5c21c93839d4b954
+
+  var signAlgorithm = {
+    name: "RSASSA-PKCS1-v1_5",
+    hash: {
+      name: "SHA-256"
+    },
+    modulusLength: 2048,
+    extractable: false,
+    publicExponent: new Uint8Array([1, 0, 1])
+  }
+
+  function importPublicKey7(pemKey) {
+    console.log(pemKey);
+    return new Promise(function(resolve) {
+      var importer = crypto.subtle.importKey("spki", convertPemToBinary(pemKey), signAlgorithm, true, ["verify"]);
+
+      importer.then(function(key) {
+        resolve(key)
+      })
+    })
+  }
+
+
+  function base64StringToArrayBuffer(b64str) {
+    console.log(b64str);
+    var byteStr = atob(b64str)
+    var bytes = new Uint8Array(byteStr.length)
+    for (var i = 0; i < byteStr.length; i++) {
+      bytes[i] = byteStr.charCodeAt(i)
+    }
+    return bytes.buffer
+  }
+
+
+function urlBase64Decode(str) {
+    return base642str(str.replace(/-/g, '+').replace(/_/g, '/'));
+    switch (output.length % 4) {
+        case 0: break;
+        case 2: output += '=='; break;
+        case 3: output += '='; break;
+        default: throw 'Invalid base64url string';
+    }
+    return decodeURIComponent(escape(atob(output)));
 }
 
 
-/** some URLs should be excluded from capture, such as the user's own email account, or the user's own website.
- * 
- * Technically this is done in two ways:. 
- * Firstly By simply excluding whole domains - straight case-insensitive match on the fully qualified domain name (FQDN)
- * Secondly By excluding specific URLs based on regular expressions (regexp)
- * 
- */
+var publicKey = "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJtdG5CNDrDFkgBrpVXYnzM+vv09q\nATno9Wd954UM62R0bov15Z1c8fVODhtxZu+7viimjwVXiHlZLYdjj0WY2g==\n-----END PUBLIC KEY-----";
+
+publicKey = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy3Z5wJ/CelzVSbFj2Kiq\nS3IrKvBv5tE5ZJyegV1a4kAaRQTnlAdy6GBHD36Ep3l7VKiXgxMlCvLopeIUJtni\ndkH+YuMtwBWtbs9q9xoXCGf5m/YH+ZXF6b5QolIhYkduZMC8F0ZSKBJt+8ATMTX8\nHbzeq43u8rHi2KHjsRQFDi88Z6WtKTT31MiAwE+WrwjgfFjtSqkQFbgM8LnTQ1Iv\n4v8sSYzp2kN2PEn28P2GR8xiLTDEhdswoyL44z6R7OxejIm1UZGz2mp40YH/240u\nzAE5hie/F5eUqSASZDT1CHQrx0Edf4t2wHYZ/wXU+BIEhXWjckk9V7GPNwXh+AZJ\newIDAQAB\n-----END PUBLIC KEY-----";
+
+
+verifyJwt8(jwt, publicKey)
+    .then(payload => console.log('JWT payload:', payload))
+    .catch(err => console.error('JWT verification error:', err));
+
+
 var domain_capture_exclusion_list = {
     "localhost": "1",
     "mail.google.com": "1",
-    "accounts.google.com": "1",
     "mail.yahoo.com": "1",
-    ".aws.amazon.com": "2",
-    ".cybotix.no": "2",
-    "azure.microsoft.com": "1"
- 
+    "bbc.com": "1",
+    "www.bbc.com": "1"
 };
-
-
-var url_capture_exclusion_list  = [
-    /example\.com$/, // regex to test if URL ends with 'example.com'
-    /https:\/\/www\.goooogle\.com/ // regex to test if URL is 'https://www.gooogle.com'
-];
-
-
-/**
- * Capturing complete URL will include the query string
- * This is desirable. However, it may also contain sensitive information, such as passwords.
- * Rules for redaction are therefore in place. These rules are applied to the query string only.
- *  
- */
-
-var redactionPatterns = [
-    { pattern: /\/users\/[\w-]+/ig, replacement: '/users/[REDACTED]' },
-    { pattern: /(sessionToken|authToken|accessToken|sessionid)=\w+/ig, replacement: '$1=[REDACTED]' },
-    { pattern: /[\w.-]+@[\w.-]+\.\w+/ig, replacement: '[REDACTED]' },
-    { pattern: /(password|pwd|creditcard|ssn)=\w+/ig, replacement: '$1=[REDACTED]' },
-    { pattern: /(api_key|apikey|client_id|client_secret)=\w+/ig, replacement: '$1=[REDACTED]' }
-];
-function redactSensitiveInfo(url) {
-    return redactionPatterns.reduce(
-        (currentUrl, { pattern, replacement }) => currentUrl.replace(pattern, replacement),
-        url
-    );
-}
-
+var url_capture_exclusion_list = {};
+url_capture_exclusion_list["sourceURLYellowNotesDB_uuid_url"] = {};
 
 /** Check if a unique ID has been set for this extenstion. It not, set one.
  * This ID is used to identify the user with the server without the user having to provide any information.
@@ -240,6 +339,7 @@ function historyImport(lastHours) {
         });
 
     });
+
 }
 
 function timestampToEpochSeconds(timestamp) {
@@ -259,77 +359,10 @@ function keyExists(key, obj) {
     return obj[key] !== undefined;
 }
 
-
-/* exclude from capture based on the domain name
-// either a wholename match or a domain match
-
-Passing the Fully Qualified DOmain nae of the URL to be checked
-
-First check if the FQDN  is on the exclusion list.
-Then check if the domain is on the exclusion list. With the domain name starting with a "." (dot)
-*/
-function isOnDomainCaptureExclusionList(FQDN) {
-    var excluded = false;
-    const list = getSuperiorDomains(FQDN );
-   //console.log(list);
-
-for (const item of list) {
-   // console.log(item);
-   // console.log (item in domain_capture_exclusion_list);
-   // console.log ( ("."+item) in domain_capture_exclusion_list);
-    if ( (item in domain_capture_exclusion_list) || ("."+item) in domain_capture_exclusion_list ){
-        excluded = true;
-        return excluded;
-
-    }
-}
-return excluded
+function isOnDomainCaptureExclusionList(key) {
+    return domain_capture_exclusion_list[key] !== undefined;
 
 }
-
-function getSuperiorDomains(fqdn) {
-    const parts = fqdn.split('.');
-    const superiorDomains = [];
-
-    for (let i = 0; i < parts.length - 1; i++) {
-        superiorDomains.push(parts.slice(i).join('.'));
-    }
-
-    return superiorDomains;
-}
-
-function isOnUrlCaptureExclusionList(url) {
-    //return domain_capture_exclusion_list[key] !== undefined;
-    return isUrlMatched(url, url_capture_exclusion_list);
-
-}
-
-function isUrlMatched(url, regexList) {
-    return regexList.some(regex => regex.test(url));
-}
-
-
-
-
-function isExcluded (url){
-    var excluded = false;
-    var domain = getDomainName(url);
-    console.log(domain);
-    if (isOnDomainCaptureExclusionList(domain)) {
-        excluded = true;
-    } else {
-        if (isOnUrlCaptureExclusionList(url)) {
-            excluded = true;
-        }
-    }
-    return excluded;
-}
-
-function getDomainName(url) {   
-    var domain = url.replace('http://','').replace('https://','').split(/[/?#]/)[0];
-    return domain;
-}
-
 
 /* triggered when the plugin is installed or when the user call this function from the GUI
  */
@@ -380,6 +413,71 @@ var callback = function (details) {
             });
             // put the token in the local storage with the URL as the key
         }
+    }
+}
+
+//chrome.webRequest.onCompleted.addListener(
+//  callback3, {
+//    urls: ["<all_urls>"], types: ["main_frame" ]
+//}, ['responseHeaders']);
+
+
+var callback3 = function (details) {
+    console.debug('##### callback3');
+    console.log(JSON.stringify(details));
+
+    // examine the http header for the X_HTTP_CYBOTIX_PLATFORM_TOKEN and if present, verify validity.
+    // is so, check for other Cybotix headers and take action accordingly
+    if (details.type == "main_frame") {
+        console.log(details);
+        const h = details.responseHeaders;
+        console.log(h);
+
+        chrome.storage.local.set({
+            "tabsOpened": "value"
+        });
+
+        console.log(JSON.stringify(h));
+        console.debug(details.responseHeaders.X_HTTP_CYBOTIX_PLATFORM_TOKEN);
+        const tabId = details.tabId;
+        console.debug("DEBUG, tabId: " + tabId);
+        // const frameId = details.frameId;
+        // console.log("DEBUG, frameId: " + frameId);
+        var entityid = getValidPlatformToken(details.responseHeaders);
+        console.debug("DEBUG, entityid: " + entityid);
+        if (entityid != null && entityid != "") {
+
+            chrome.tabs.query({
+                url: details.url
+            }).then(function (tabs) {
+                console.log("DEBUG,calling callTabs");
+                console.log(tabs);
+
+                const message = {
+                    type: 'platformtoken',
+                    payload: 'Hello from background script!',
+                    token: entityid
+                };
+                console.log(message);
+                for (const tab of tabs) {
+                    console.log(tab);
+
+                    chrome.tabs.sendMessage(tab.id, message, (response) => {
+                        if (chrome.runtime.lastError) {
+                            console.error(chrome.runtime.lastError);
+                            return;
+                        }
+                        console.log('Message sent and response received:', response);
+                    });
+
+                }
+
+            })
+            .catch(onError);
+            // put the token in the local storage with the URL as the key
+
+        }
+
     }
 }
 
@@ -464,13 +562,19 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
             console.log("### X_HTTP_CYBOTIX_PLATFORM_TOKEN: " + platformtoken);
 
             console.log(isJwtFormat(platformtoken));
-            // validate the platform token overall structure - a very coarse-grained "sanity-check" to screen-out complete giberish
-            if (validPlaformtokenJwtRegExp.test((platformtoken))) {
+            // validate the platform token
+            if (isJwtFormat(platformtoken)) {
                 console.log(platformtoken);
-                getValidatedPlatformTokenPayload(platformtoken, false, false)
+                //validateJwtWithPublicKey(platformtoken,"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzNDQRPGUPmpUj3K7D0LoucRrCuAwLLD7B0i9iOfJLXps9lN05+bL8H24eVGwb8UO+Ip+2GQrLlPoErvuqqftv9heKQ9C6P3dNPFHsgcJqLIT2qYOWRXqceKdV5VshGzVRdS7v+/giWn4uTkEFskor9JZJFnxredZyOK7Buc/WvU1yt40FQum1/mpCPCmKcqulBib93PpwlXkjyZfbmQHG5QQ/DSg2bE607SrXc0vRYhrHfiuncSbfkKaxPA4C/YQr/4QbyX1Hm/IzKrToaWwghjF0uP0VWVlHJ1xfyGlxQvPllQpa6t7FuBx3N9xJ1OEsGRo4gS7ctiogHVwh1M5oQIDAQAB","cybotix-personal-data-commander").then(
+                //parseJWTbypassSignCheck(platformtoken, "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzNDQRPGUPmpUj3K7D0LoucRrCuAwLLD7B0i9iOfJLXps9lN05+bL8H24eVGwb8UO+Ip+2GQrLlPoErvuqqftv9heKQ9C6P3dNPFHsgcJqLIT2qYOWRXqceKdV5VshGzVRdS7v+/giWn4uTkEFskor9JZJFnxredZyOK7Buc/WvU1yt40FQum1/mpCPCmKcqulBib93PpwlXkjyZfbmQHG5QQ/DSg2bE607SrXc0vRYhrHfiuncSbfkKaxPA4C/YQr/4QbyX1Hm/IzKrToaWwghjF0uP0VWVlHJ1xfyGlxQvPllQpa6t7FuBx3N9xJ1OEsGRo4gS7ctiogHVwh1M5oQIDAQAB")
+                //getValidatedPlatformTokenPayload(platformtoken)
+                //validatedPlatformTokenPayload(platformtoken)
+                verifyJwt5(platformtoken,"-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJtdG5CNDrDFkgBrpVXYnzM+vv09q\nATno9Wd954UM62R0bov15Z1c8fVODhtxZu+7viimjwVXiHlZLYdjj0WY2g==\n-----END PUBLIC KEY-----")
                 .then(function (payload) {
 
-                    platformtokencontent = payload;
+                    return validatePlatformToken(payload);
+                }).then(function (data) {
+                    platformtokencontent = data;
                     console.log(platformtokencontent);
 
                     //function (entityid) {
@@ -564,13 +668,13 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
 
 
                         console.log("has X_HTTP_CYBOTIX_DATA_REQUEST");
-                        //console.log(data);
+                        console.log(data);
                         // set a switch for when it is time to get a close look at any possible data agreements.
                         // only do this is there is a valid request
                         var validrequest = false;
                         var activetab_id;
                         // the UUID of the requesting party.
-                        counterparty_id = (JSON.parse(base642str(platformtokencontent.sub))).id;
+                        counterparty_id = platformtokencontent.sub;
 
                         // Another header is also required, X_HTTP_CYBOTIX_QUERY_REDIRECT, contaning the URL of where to send the response
                         // If this header is not present, the source URL is used. This is not recommended as it may lead to unexpected results.
@@ -593,7 +697,7 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                         // if (isValidJSON(request)) {
                         //console.debug(isObjectEmpty(request));
                         request_payload = JSON.parse(request);
-                        // if (req.requesttype == "clickhistory") {
+                          // if (req.requesttype == "clickhistory") {
                         console.debug("has valid requesttype");
                         validrequest = true;
                         //console.debug(req.requestdetails);
@@ -668,6 +772,7 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
 
                                         const message = {
                                             tabId: details.tabId,
+                                            frameId: details.frameId,
                                             frameId: details.frameId,
                                             redir_target: redir_target,
                                             type: 'datarequest',
@@ -763,8 +868,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 browserid: installationUniqueId
             }
 
+
+
         });
-    } else if (message.type == "set_click_data_expiration_period") {
+  } else if (message.type == "set_click_data_expiration_period") {
         var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
 
         chrome.storage.local.get(['installationUniqueId']).then(function (result) {
@@ -777,13 +884,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 browserid: installationUniqueId
             }
 
-            //          # set expiration time for click data (set expiration time to be equal to the utc timestamp plus the provided value)
+  //          # set expiration time for click data (set expiration time to be equal to the utc timestamp plus the provided value)
 
-            const lifetime_message = {
-                "days": message.selectedDayCount,
-                "hours": 0
-            }
-            console.log(lifetime_message);
+const lifetime_message = {  "days":message.selectedDayCount, "hours":0}
+console.log(lifetime_message);
             return fetch(server_url + URI_plugin_user_set_clickdata_lifetime, {
                 method: 'POST',
                 headers: {
@@ -792,118 +896,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 },
                 body: JSON.stringify(lifetime_message) // example IDs, replace as necessary
             });
-
+            
         });
-
         return true;
-    } else if (message.type == "suspendAllDataAgreements") {
-        console.log("suspendAllDataAgreements");
-        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
-
-        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
-            //installationUniqueId = result;
-            console.log(result);
-
-            installationUniqueId = result.installationUniqueId;
-console.log(message.details);
-          
-
-            //          # set expiration time for click data (set expiration time to be equal to the utc timestamp plus the provided value)
-
-            //const suspend_message = [{  "agreementid":"894e89f3-b3a3-4d02-8833-39019b179df3", "agreementid":"e03164d9-e74d-4a0d-a9ac-8e35f0b2c50e"}]
-
-            //console.log(suspend_message);
-            return fetch(server_url + URL_plugin_user_deactivate_agreements, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    [plugin_uuid_header_name]: installationUniqueId
-                },
-                body: JSON.stringify(message.details)
-            });
-
-        });
-
-
-
-        return true;
-} else if (message.type == "activateAllDataAgreements") {
-    console.log("activateAllDataAgreements");
-    var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
-
-    chrome.storage.local.get(['installationUniqueId']).then(function (result) {
-        //installationUniqueId = result;
-        console.log(result);
-
-        installationUniqueId = result.installationUniqueId;
-console.log(message.details);
-      
-
-        //          # set expiration time for click data (set expiration time to be equal to the utc timestamp plus the provided value)
-
-        //const suspend_message = [{  "agreementid":"894e89f3-b3a3-4d02-8833-39019b179df3", "agreementid":"e03164d9-e74d-4a0d-a9ac-8e35f0b2c50e"}]
-
-        //console.log(suspend_message);
-        return fetch(server_url + URL_plugin_user_activate_agreements, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                [plugin_uuid_header_name]: installationUniqueId
-            },
-            body: JSON.stringify(message.details)
-        });
-
-    });
-
-
-return true;
-
-    } else if (message.type == "deleteAccount") {
-        console.log("deleteAccount");
-        // deletes the account and all account data
-        // This action removes the user from the Cybotix platform
-        // The user can be completely restored from backup data
-        var installationUniqueId;
-
-        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
-            //installationUniqueId = result;
-            console.log(result);
-
-            installationUniqueId = result.installationUniqueId;
-
-            del_mess = {
-                browserid: installationUniqueId
-            }
-
-            // Fetch data from web service (replace with your actual API endpoint)
-
-            return fetch(server_url + URI_plugin_user_delete_account, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    [plugin_uuid_header_name]: installationUniqueId
-                },
-                body: JSON.stringify(del_mess) // example IDs, replace as necessary
-            });
-        }).then(function (response) {
-            console.log(response);
-
-            // Check for errors
-            try {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-            } catch (err) {
-                console.log(err);
-            }
-        });
-
+ 
     } else if (message.type == "deleteAccountData") {
         console.log("deleteAccountData");
         // deletes all account data
-        // This action removes the user's data from the Cybotix platform
-        // The user's data can be completely restored from backup data
-        var installationUniqueId; 
+        // This action removes the user from the Cybotix platform
+        // The user can be completely restored from backup data
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
 
         chrome.storage.local.get(['installationUniqueId']).then(function (result) {
             //installationUniqueId = result;
@@ -1369,6 +1371,18 @@ function filterHistory(startTime, endTime, pattern) {
     });
 }
 
+function searchHistory(options) {
+    return new Promise((resolve, reject) => {
+        chrome.history.search(options, (results) => {
+            if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError));
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
+
 function executeScriptOnTab(tabId, scriptName) {
     console.log("executeScriptOnTab");
     return new Promise((resolve, reject) => {
@@ -1431,15 +1445,59 @@ function getGrantsFromDataAccessToken(token) {
 
 }
 
+function base64UrlDecode(str) {
+    // Convert Base64Url to Base64 by replacing - with + and _ with /
+    const base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = Buffer.from(base64, 'base64').toString('binary');
+    return decoded;
+}
+
+function verifySignature(encodedHeader, encodedPayload, signature, publicKey) {
+    console.log(encodedHeader);
+    console.log(encodedPayload);
+    console.log(signature);
+    console.log(publicKey);
+
+    const crypto = Crypto; //|| window.msCrypto;
+    const data = encodedHeader + "." + encodedPayload;
+    console.debug(signature);
+    const publicKeyBuffer = new Uint8Array([...publicKey].map(ch => ch.charCodeAt(0)));
+
+    try {
+        const encodedSignature = new Uint8Array(Array.from(atob(signature), c => c.charCodeAt(0)));
+        console.log(encodedSignature);
+        console.log(publicKey);
+        return crypto.subtle.importKey(
+            "spki",
+            new TextEncoder().encode(publicKey), {
+            name: "RSASSA-PKCS1-v1_5",
+            hash: {
+                name: "SHA-256"
+            }
+        },
+            false,
+            ["verify"]).then(key => {
+            return crypto.subtle.verify(
+                "RSASSA-PKCS1-v1_5",
+                key,
+                encodedSignature,
+                new TextEncoder().encode(data));
+        });
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}
+
 function verifyJwt3(token, publicKey) {
     console.log("verifyJwt");
 
-    const[headerB64, payloadB64, signatureB64] = token.split('.');
+    const [headerB64, payloadB64, signatureB64] = token.split('.');
     const header = JSON.parse(atob(headerB64));
     const payload = JSON.parse(atob(payloadB64));
     const signatureUint8Array = urlBase64ToUint8Array(signatureB64);
     const signedContent = str2ab(headerB64 + '.' + payloadB64);
-    console.log(signedContent);
+console.log(signedContent);
     // Convert PEM to JWK (JSON Web Key)
     const pemHeader = "-----BEGIN PUBLIC KEY-----";
     const pemFooter = "-----END PUBLIC KEY-----";
@@ -1449,21 +1507,25 @@ function verifyJwt3(token, publicKey) {
 
     return crypto.subtle.importKey(
         "spki",
-        binaryDer, {
-        name: "RSASSA-PKCS1-v1_5",
-        hash: "SHA-256",
-    },
+        binaryDer,
+        {
+            name: "RSASSA-PKCS1-v1_5",
+            hash: "SHA-256",
+        },
         true,
-        ["verify"])
-    .then(function (cryptoKey) {
+        ["verify"]
+    )
+    .then(function(cryptoKey){ 
         console.log(cryptoKey);
-        return crypto.subtle.verify({
+        return crypto.subtle.verify(
+        {
             name: "RSASSA-PKCS1-v1_5",
         },
-            cryptoKey,
-            signatureUint8Array,
-            signedContent);
-    })
+        cryptoKey,
+        signatureUint8Array,
+        signedContent
+    );
+})
     .then(isValid => {
         if (isValid) {
             return payload;
@@ -1473,11 +1535,205 @@ function verifyJwt3(token, publicKey) {
     });
 }
 
+function validatedPlatformTokenPayload(token) {
+    console.log("validatedPlatformTokenPayload");
+    const publicKey = "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJtdG5CNDrDFkgBrpVXYnzM+vv09q\nATno9Wd954UM62R0bov15Z1c8fVODhtxZu+7viimjwVXiHlZLYdjj0WY2g==\n-----END PUBLIC KEY-----";
+try{
+    return new Promise(function (resolve, reject) {
+    const [headerB64, payloadB64, signatureB64] = token.split('.');
+    const header = JSON.parse(atob(headerB64));
+    const payload = JSON.parse(atob(payloadB64));
+    console.log(header);
+    console.log(payloadB64);
+    console.log(payload);
+    //console.log(paylsignatureB64oad);
+    const signatureUint8Array = urlBase64ToUint8Array(signatureB64);
+    const signedContent = str2ab(headerB64 + '.' + payloadB64);
+
+    // Convert PEM to JWK (JSON Web Key)
+    const pemHeader = "-----BEGIN PUBLIC KEY-----";
+    const pemFooter = "-----END PUBLIC KEY-----";
+    console.log(publicKey.substring(pemHeader.length, publicKey.length - pemFooter.length));
+    console.log(publicKey.substring(pemHeader.length, publicKey.length - pemFooter.length).replace(/\s+/g, ''));
+    
+    const pemContents = publicKey.substring(pemHeader.length, publicKey.length - pemFooter.length).replace(/\s+/g, '');
+    const binaryDerString = atob(pemContents);
+    const binaryDer = str2ab(binaryDerString);
+
+crypto.subtle.importKey(
+    "spki",
+    binaryDer,
+    {
+        name: "RSASSA-PKCS1-v1_5",
+        hash: "SHA-256",
+    },
+    true,
+    ["verify"]
+).then(function(out){
+console.log(out);
+    resolve(out);
+
+} );
+
+});
+}catch(error){
+    console.log(error);
+}
+}
+
+
+function verifyJwt6(token, publicKey) {
+    return new Promise((resolve, reject) => {
+        const [headerB64, payloadB64, signatureB64] = token.split('.');
+        const signatureUint8Array = new Uint8Array(urlBase64Decode(signatureB64).split('').map(c => c.charCodeAt(0)));
+        const signedContent = str2ab(headerB64 + '.' + payloadB64);
+
+        importPublicKey6(publicKey)
+            .then(cryptoKey => crypto.subtle.verify(
+                { name: "RSASSA-PKCS1-v1_5" },
+                cryptoKey,
+                signatureUint8Array,
+                signedContent
+            ))
+            .then(isValid => {
+                if (isValid) {
+                    resolve(parseJwt(token));
+                } else {
+                    reject(new Error('Invalid JWT signature'));
+                }
+            })
+            .catch(reject);
+    });
+}
+function urlBase64Decode6(str) {
+    let output = str.replace(/-/g, '+').replace(/_/g, '/');
+    switch (output.length % 4) {
+        case 0: break;
+        case 2: output += '=='; break;
+        case 3: output += '='; break;
+        default: throw 'Invalid base64url string';
+    }
+    return decodeURIComponent(escape(window.atob(output)));
+}
+
+function parseJwt6(token) {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+        throw new Error('JWT must have 3 parts');
+    }
+    const decoded = urlBase64Decode6(parts[1]);
+    return JSON.parse(decoded);
+}
+
+function importPublicKey6(pem) {
+    return new Promise((resolve, reject) => {
+        try {
+            const pemHeader = "-----BEGIN PUBLIC KEY-----";
+            const pemFooter = "-----END PUBLIC KEY-----";
+            const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length);
+            const binaryDerString = atob(pemContents);
+            const binaryDer = str2ab(binaryDerString);
+
+            crypto.subtle.importKey(
+                "spki",
+                binaryDer,
+                { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } },
+                false,
+                ["verify"]
+            )
+            .then(resolve)
+            .catch(reject);
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+
+function verifyJwt5(token, publicKey) {
+    console.log("verifyJwt");
+
+    const [headerB64, payloadB64, signatureB64] = token.split('.');
+    const header = JSON.parse(atob(headerB64));
+    const payload = JSON.parse(atob(payloadB64));
+    const signatureUint8Array = urlBase64ToUint8Array(signatureB64);
+    const signedContent = str2ab(headerB64 + '.' + payloadB64);
+
+    // Convert PEM to JWK (JSON Web Key)
+    const pemHeader = "-----BEGIN PUBLIC KEY-----";
+    const pemFooter = "-----END PUBLIC KEY-----";
+    const pemContents = publicKey.substring(pemHeader.length, publicKey.length - pemFooter.length);
+    const binaryDerString = atob(pemContents);
+    const binaryDer = str2ab(binaryDerString);
+
+    return crypto.subtle.importKey(
+        "spki",
+        binaryDer,
+        {
+            name: "RSASSA-PKCS1-v1_5",
+            hash: "SHA-256",
+        },
+        true,
+        ["verify"]
+    )
+    .then(cryptoKey => crypto.subtle.verify(
+        {
+            name: "RSASSA-PKCS1-v1_5",
+        },
+        cryptoKey,
+        signatureUint8Array,
+        signedContent
+    ))
+    .then(isValid => {
+        if (isValid) {
+            return payload;
+        } else {
+            throw new Error('Invalid JWT signature.');
+        }
+    });
+}
+
+
+
+ function importPublicKey(pem) {
+    return new Promise(function (resolve, reject) {
+    // Fetch the part of the PEM string between header and footer
+    const pemHeader = "-----BEGIN PUBLIC KEY-----";
+    const pemFooter = "-----END PUBLIC KEY-----";
+    const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length).replace(/\s+/g, '');
+    
+    // Base64 decode the string to get the binary data
+    const binaryDerString = atob(pemContents);
+    const binaryDer = str2ab(binaryDerString);
+
+    // Construct a CryptoKey from the binary data
+    resolve( crypto.subtle.importKey(
+        "spki",
+        binaryDer,
+        {
+            name: "RSASSA-PKCS1-v1_5",
+            hash: "SHA-256",
+        },
+        true,
+        ["verify"]
+    ));
+    });
+}
+
+function str2ab(str) {
+    const buf = new ArrayBuffer(str.length);
+    const bufView = new Uint8Array(buf);
+    for (let i = 0; i < str.length; i++) {
+        bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+}
+
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
     const base64 = (base64String + padding)
-    .replace(/\-/g, '+')
-    .replace(/_/g, '/');
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
 
     const rawData = atob(base64);
     const outputArray = new Uint8Array(rawData.length);
@@ -1488,172 +1744,309 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
-/*
-The following function is used to validate the platform token
 
-Running in the browser is not a secure environement.
-So checking whether or not the token has been temapered with (the signature check) is not going to be completely reliable.
-In abition, this check has presented som considerable codein difficulties.
-So for now, skip this the signture check by default.
-
-In anycase the platform token is checked again on the server,
-so not much use could be effected by a an expired token or onw that has been tampered with.
-
-
-Optionally check the JWT signature, and whether or not the token has been revoked
- */
-function getValidatedPlatformTokenPayload(rawPlatformToken, checkSign, CheckRevocation) {
+function verifySignature2(data, signature, publicKeyPem) {
+    console.debug("verifySignature2");
+    console.log(data);
+    console.log(signature);
+    console.log(publicKeyPem);
+    // const crypto = crypto;
 
     return new Promise(function (resolve, reject) {
-        try {
-
-            //     const token = rawPlatformToken.replace(/-/g, '+').replace(/_/g, '/');
-            const token = rawPlatformToken;
-            /*
-            Do basic "sanity"-check on the JWT holding the platform token
-            That it is of an appropriate length and that it is base64 encoded, and has the right number of delimiters
-             */
-            function isPlatformTokenRawStructureValid(token) {
-                console.debug("isPlatformTokenStructureValid");
-                if (validPlaformtokenJwtRegExp.test(token)) {
-                    return true
-                } else {
-                    return false;
-                }
+        console.debug("new promise")
+        // Convert PEM to an ArrayBuffer
+        const publicKeyBuffer = new Uint8Array([...publicKeyPem].map(ch => ch.charCodeAt(0)));
+        console.debug(publicKeyBuffer);
+        crypto.subtle.importKey(
+            'spki',
+            publicKeyBuffer, {
+            name: "RSASSA-PKCS1-v1_5",
+            hash: {
+                name: "SHA-256"
             }
+        },
+            false,
+            ['verify']).then(publicKey => {
+            console.debug("publicKey");
+            console.debug(publicKey);
+            // Convert data and signature to ArrayBuffers
+            const dataBuffer = new TextEncoder().encode(data);
+            const signatureBuffer = new Uint8Array([...atob(signature)].map(ch => ch.charCodeAt(0)));
 
-            // look for a endpoint (url) for token revocation in the JWT itself
-            function checkTokenRevokationIfRevocationEndPointIsPresent(tokenPayload) {
+            // Verify the signature
+            resolve(crypto.subtle.verify(
+                    "RSASSA-PKCS1-v1_5",
+                    publicKey,
+                    signatureBuffer,
+                    dataBuffer));
+        }).catch(function (err) {
+            console.debug(err);
+            reject(err);
+        });
+    });
+}
+
+/**
+ *
+ * @param {*} token
+ * @param {*} publicKeyPEM
+ * @returns
+ *
+ * put in this function to skip signature check while some JWK issues are sorted out
+ */
+function parseJWTbypassSignCheck(token, publicKeyPEM) {
+    console.log("parseJWT");
+    // console.log(token);
+    const parts = token.replace(/-/g, '+').replace(/_/g, '/').split('.');
+    if (parts.length !== 3) {
+        //throw new Error('Invalid token format');
+        console.log('Invalid token format');
+    }
+
+    return new Promise(function (resolve, reject) {
+
+        // bypass this pending work on JWKs
+        resolve(JSON.parse(base642str(parts[1].replace(/-/g, '+').replace(/_/g, '/'))));
+
+    });
+}
+
+
+function getValidatedPlatformTokenPayload(rawPlatformToken) {
+    return new Promise(function (resolve, reject) {
+    try {
+       
+        //     const token = rawPlatformToken.replace(/-/g, '+').replace(/_/g, '/');
+        const token = rawPlatformToken;
+        /*
+        Do basic "sanity"-check on the JWT holding the platform token
+        That it is of an appropriate length and that it is base64 encoded, and has the right number of delimiters
+         */
+        function isPlatformTokenRawStructureValid(token) {
+            console.debug("isPlatformTokenStructureValid");
+            const regExpValidPlatformToken = new RegExp(/^[a-zA-Z0-9\/_\.\-_=]{100,2000}$/);
+            if (regExpValidPlatformToken.test(token)) {
+                return true
+            } else {
                 return false;
             }
+        }
 
-            function decodedPlatformtokenSignatureValid(token) {
-                try {
-                    console.debug("isPlatformtokenSignatureValid");
-                    console.debug("isPlatformtokenSignatureValid, validating: " + token);
-                    const cybotixPublicKey = config.signature_validation_key;
-                    console.debug("isPlatformtokenSignatureValid, using: " + cybotixPublicKey);
-                    // Verify the token
+        function decodedPlatformtokenSignatureValid(token) {
+            try {
+                console.debug("isPlatformtokenSignatureValid");
+                console.debug("isPlatformtokenSignatureValid, validating: " + token);
+                const cybotixPublicKey = config.signature_validation_key;
+                console.debug("isPlatformtokenSignatureValid, using: " + cybotixPublicKey);
+                // Verify the token
 
-                    const jwt = require('jsonwebtoken');
-                    const decoded = jwt.verify(token, cybotixPublicKey, {
-                            algorithms: ['ES256']
-                        });
-                    console.log("decoded");
-                    console.log(decoded);
-                    return decoded;
-                } catch (e) {
-                    console.log(e);
-                    return false;
-                }
-            }
-
-            function isPlatformTokenPayloadDataValid(platform_token_payload) {
-                console.log("isPlatformTokenPayloadDataValid");
-                // check platform token issue and audience
-                console.log(JSON.stringify(config));
-                console.log(config.platform_tokens);
-
-                console.log(config.platform_tokens.accepted_audiences);
-                console.log(config.platform_tokens.accepted_issuers);
-                console.log(platform_token_payload);
-
-                console.log("iss: " + platform_token_payload.iss);
-                console.log("iss accept: " + (platform_token_payload.iss in config.platform_tokens.accepted_issuers));
-                console.log("sub: " + platform_token_payload.sub);
-                console.log("aud: " + platform_token_payload.aud);
-                console.log("aud accept: " + (platform_token_payload.aud in config.platform_tokens.accepted_audiences));
-                const now = Math.floor(Date.now() / 1000);
-                console.log("now: " + now);
-
-                console.log("exp: " + platform_token_payload.exp);
-                console.log("exp accept: " + (now <= platform_token_payload.exp));
-                console.log("nbf: " + platform_token_payload.nbf);
-                console.log("nbf accept: " + (now >= platform_token_payload.nbf));
-
-                if (platform_token_payload.iss in config.platform_tokens.accepted_issuers &&
-                    platform_token_payload.aud in config.platform_tokens.accepted_audiences &&
-                    now <= platform_token_payload.exp &&
-                    now >= platform_token_payload.nbf) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-
-            if (isPlatformTokenRawStructureValid(token)) {
-                console.log("isPlatformTokenRawStructureValid=true");
-                //verifySignature(token.replace(/-/g, '+').replace(/_/g, '/').split('.')[0] ,token.replace(/-/g, '+').replace(/_/g, '/').split('.')[1] ,token.replace(/-/g, '+').replace(/_/g, '/').split('.')[2], "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJtdG5CNDrDFkgBrpVXYnzM+vv09q\nATno9Wd954UM62R0bov15Z1c8fVODhtxZu+7viimjwVXiHlZLYdjj0WY2g==\n-----END PUBLIC KEY-----").
-                if (checkSign) {
-                    console.log("checkSign=true");
-                    verifyJwt3(token.replace(/-/g, '+').replace(/_/g, '/'), "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJtdG5CNDrDFkgBrpVXYnzM+vv09q\nATno9Wd954UM62R0bov15Z1c8fVODhtxZu+7viimjwVXiHlZLYdjj0WY2g==\n-----END PUBLIC KEY-----")
-
-                    .then(function (data) {
-                        console.log(data);
-
-                        const platformTokenPayload = decodedPlatformtokenPayload(token);
-                        console.log("platformTokenPayload");
-                        console.log(platformTokenPayload);
-                        if (platformTokenPayload) {
-                            console.log("signature is valid and content is decoded as: " + platformTokenPayload);
-
-                            // check the content of the platform token
-                            if (isPlatformTokenPayloadDataValid(platformTokenPayload)) {
-                                if (checkTokenRevokationIfRevocationEndPointIsPresent) {
-                                    // look for token revocation endpoint in the JWT itself
-
-                                } else {
-
-                                    resolve(platformTokenPayload);
-                                }
-                            } else {
-                                console.log("invalid platform token content");
-                                resolve(false);
-                            }
-
-                        } else {
-                            console.log("3.8. platform token signature invalid");
-                            //return res.status(401).json({ error: 'Invalid platform token signature' });
-                        }
-                        console.log(data);
+                const jwt = require('jsonwebtoken');
+                const decoded = jwt.verify(token, cybotixPublicKey, {
+                        algorithms: ['ES256']
                     });
-                } else {
-                    console.log("checkSign=false");
-                    const platformTokenPayload = decodedPlatformtokenPayload(token);
+                console.log("decoded");
+                console.log(decoded);
+                return decoded;
+            } catch (e) {
+                console.log(e);
+                return false;
+            }
+        }
 
-                    console.log("platformTokenPayload");
-                    console.log(platformTokenPayload);
+        function isPlatformTokenPayloadDataValid(platform_token_payload) {
+            console.log("isPlatformTokenPayloadDataValid");
+            // check platform token issue and audience
+            console.log(accepted_audiences);
+            console.log(accepted_issuers);
+            console.log(platform_token_payload);
 
-                    if (platformTokenPayload) {
-                        console.log("payload: " + platformTokenPayload);
+            console.log("iss: " + platform_token_payload.iss);
+            console.log("iss accept: " + (platform_token_payload.iss in accepted_issuers));
+            console.log("sub: " + platform_token_payload.sub);
+            console.log("aud: " + platform_token_payload.aud);
+            console.log("aud accept: " + (platform_token_payload.aud in accepted_audiences));
+            const now = Math.floor(Date.now() / 1000);
+            console.log("now: " + now);
 
-                        // check the content of the platform token
-                        if (isPlatformTokenPayloadDataValid(platformTokenPayload)) {
-                            if (checkTokenRevokationIfRevocationEndPointIsPresent(platformTokenPayload)) {
-                                // look for token revocation endpoint in the JWT itself
+            console.log("exp: " + platform_token_payload.exp);
+            console.log("exp accept: " + (now <= platform_token_payload.exp));
+            console.log("nbf: " + platform_token_payload.nbf);
+            console.log("nbf accept: " + (now >= platform_token_payload.nbf));
 
-                            } else {
+            if (platform_token_payload.iss in accepted_issuers &&
+                platform_token_payload.aud in accepted_audiences &&
+                now <= platform_token_payload.exp &&
+                now >= platform_token_payload.nbf) {
+                return true;
+            } else {
+                return false;
+            }
+        }
 
-                                resolve(platformTokenPayload);
-                            }
-                        } else {
-                            console.log("invalid platform token content");
-                            resolve(false);
-                        }
+        if (isPlatformTokenRawStructureValid(token)) {
+console.log("isPlatformTokenRawStructureValid");
+//verifySignature(token.replace(/-/g, '+').replace(/_/g, '/').split('.')[0] ,token.replace(/-/g, '+').replace(/_/g, '/').split('.')[1] ,token.replace(/-/g, '+').replace(/_/g, '/').split('.')[2], "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJtdG5CNDrDFkgBrpVXYnzM+vv09q\nATno9Wd954UM62R0bov15Z1c8fVODhtxZu+7viimjwVXiHlZLYdjj0WY2g==\n-----END PUBLIC KEY-----").
+verifyJwt3(token.replace(/-/g, '+').replace(/_/g, '/'), "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJtdG5CNDrDFkgBrpVXYnzM+vv09q\nATno9Wd954UM62R0bov15Z1c8fVODhtxZu+7viimjwVXiHlZLYdjj0WY2g==\n-----END PUBLIC KEY-----")
 
+.then(function(data) {
+            console.log(data);
+
+            const platformTokenPayload = decodedPlatformtokenSignatureValid(token);
+            if (platformTokenPayload) {
+                console.log("signature is valid and content is decoded as: " + platformTokenPayload);
+
+                // check the content of the platform token
+                if (isPlatformTokenPayloadDataValid(platformTokenPayload)) {
+                    if (checkTokenRevokationIfRevocationEndPointIsPresent) {
+                        // look for token revocation endpoint in the JWT itself
+
+                    } else {
+
+                        resolve( platformTokenPayload);
                     }
+                } else {
+                    console.log("invalid platform token content");
+                    resolve( false);
                 }
 
             } else {
-                console.log("invalid platform token structure");
-                resolve(false);
+                console.log("3.8. platform token signature invalid");
+                //return res.status(401).json({ error: 'Invalid platform token signature' });
             }
+            console.log(data);
+        });
 
-        } catch (e) {
-            console.log(e);
-            reject(false);
+        } else {
+            console.log("invalid platform token structure");
+            resolve( false);
         }
+
+    } catch (e) {
+        console.log(e);
+        reject( false);
+    }
+});
+}
+
+
+
+function parseJWT(token, publicKeyPEM) {
+    console.log("parseJWT");
+    console.log(token);
+    console.log(publicKeyPEM);
+    const parts = token.replace(/-/g, '+').replace(/_/g, '/').split('.');
+    if (parts.length !== 3) {
+        //throw new Error('Invalid token format');
+        console.log('Invalid token format');
+    }
+
+    return new Promise(function (resolve, reject) {
+
+        const encodedHeader = parts[0];
+        const encodedPayload = parts[1];
+        const signature = parts[2];
+
+        console.log(encodedPayload);
+        console.log(signature);
+        console.log(publicKeyPEM);
+        // bypass this pending work on JWKs
+        //resolve(base642str(encodedPayload.replace(/-/g, '+').replace(/_/g, '/')));
+
+        //verifySignature2(encodedPayload, signature, publicKeyPEM)
+
+        const publicKeyBuffer = new Uint8Array([...publicKeyPEM].map(ch => ch.charCodeAt(0)));
+        console.debug(publicKeyBuffer);
+
+        crypto.subtle.importKey(
+            'spki',
+            publicKeyBuffer, {
+            name: "RSASSA-PKCS1-v1_5",
+            hash: {
+                name: "SHA-256"
+            }
+        },
+            false,
+            ['verify'])
+        .catch(function (err) {
+            console.debug(err);
+            reject(err);
+        }).then(publicKey => {
+            console.debug("publicKey");
+            console.debug(publicKey);
+            // Convert data and signature to ArrayBuffers
+            const dataBuffer = new TextEncoder().encode(encodedPayload);
+            const signatureBuffer = new Uint8Array([...atob(signature)].map(ch => ch.charCodeAt(0)));
+
+            // Verify the signature
+            resolve(crypto.subtle.verify(
+                    "RSASSA-PKCS1-v1_5",
+                    publicKey,
+                    signatureBuffer,
+                    dataBuffer));
+        })
+        .then(function (out) {
+            console.debug(out);
+            resolve(out);
+        }).catch(function (err) {
+            console.debug(err);
+            reject(err);
+        });
+
+        //console.log(verifySignature(encodedHeader, encodedPayload, signature, publicKey));
+        //   return verifySignature(encodedHeader, encodedPayload, signature, publicKey).then(isValid => {
+        //      if (!isValid) {
+        //           throw new Error('Invalid signature');
+        //        }
+        //
+        //        const header = JSON.parse(base64UrlDecode(encodedHeader));
+        //       const payload = JSON.parse(base64UrlDecode(encodedPayload));
+
+        //  return { header, payload };
+        //return true
+        // });
+
     });
+}
+
+// Example usage:
+//  const token = "YOUR_JWT_HERE";
+//  const publicKey = "YOUR_PUBLIC_KEY_IN_PEM_FORMAT_HERE";
+
+//  parseJWT(token, publicKey).then(data => {
+//      console.log(data);
+//  }).catch(error => {
+//      console.error("Failed to parse JWT:", error);
+//   });
+
+
+function validatePlatformToken(tokenPayload) {
+
+    // chect validy time
+
+    // check issuer
+    // check for revocation
+    console.debug(tokenPayload);
+
+    return new Promise(function (resolve, reject) {
+
+        const aud = tokenPayload.aud;
+
+        console.debug(aud);
+
+        console.debug(keyExists(tokenPayload.aud, valid_audience_values));
+
+        console.debug(tokenPayload);
+
+        // check audience
+        if (keyExists(tokenPayload.aud, valid_audience_values)) {
+
+            resolve(tokenPayload);
+        } else {
+            reject("invalid audience");
+        }
+
+    });
+
 }
 
 function validateJwtWithPublicKey(token, publicKey, requiredAudience) {
@@ -1792,9 +2185,6 @@ function getValidPlatformToken(h) {
     }
 }
 
-// overall strcuture of platformtoken JWT - to filter out obvious fakes and/or attempts to overflow the system
-const validPlaformtokenJwtRegExp = /^[A-Za-z0-9-_]{10,200}=*\.[A-Za-z0-9-_]{50,2000}=*\.[A-Za-z0-9-_]{50,500}=*$/;
-
 // Verify that a submitted platform token is valid.
 // Check separate documentation on how to do this.
 function getValidPlatformToken(jwt) {
@@ -1812,19 +2202,9 @@ function getValidPlatformToken(jwt) {
 
 }
 
-/* check if the data purporint to be a JWT token conform to the minimum requirements
-NOTE: the date is expected to be URI encoded ( )
-
-.replace(/\+/g, '-')
-.replace(/\//g, '_')
-.replace(/=+$/, '');
-
-base62 encoding can end in =, which is not URI encoded, but these equalsigns are not expected to be present in the token.
-However, they are permitted here.
- */
-
 function isJwtFormat(str) {
-    return validPlaformtokenJwtRegExp.test(str);
+    const jwtPattern = /^[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{50,}\.[A-Za-z0-9-_]{50,}$/;
+    return jwtPattern.test(str);
 }
 
 // Verify that a submitted request token is valid.
@@ -1868,22 +2248,6 @@ function getNamedHeader(h, headerName) {
                 break;
             }
         } catch (e) {}
-    }
-}
-
-/*
-Returns the object of json of the JWT token payload, without validating the signature or performing any other checks apart from well-formedness
-Use with caustion
- */
-function decodedPlatformtokenPayload(token) {
-    console.debug("decodedPlatformtokenPayload");
-
-    try {
-        payload = JSON.parse(base64Decode(token.replace(/-/g, '+').replace(/_/g, '/').split('.')[1]));
-        return payload;
-    } catch (e) {
-        console.log(e);
-        return false;
     }
 }
 
@@ -1940,7 +2304,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 
 // Function to use "fetch" to delete a data row
 async function addDataRow(url) {
-    console.debug("DEBUG,capture addDataRow" );
+    console.debug("DEBUG,capture addDataRow +url" + url);
 
     //console.debug("DEBUG,capture addDataRow +domain" + url.replace(/.*\:\/\/([^:\/]*)[:\/].*/,"$1") );
 
@@ -1948,8 +2312,8 @@ async function addDataRow(url) {
 
     console.debug("DEBUG,capture addDataRow, domain: " + domain);
 
-    console.debug("DEBUG,capture addDataRow, isExcluded: " + isExcluded(domain));
-    if (!isExcluded(domain)) {
+    console.debug("DEBUG,capture addDataRow, isOnDomainCaptureExclusionList: " + isOnDomainCaptureExclusionList(domain));
+    if (!isOnDomainCaptureExclusionList(domain)) {
         try {
 
             let installationUniqueId = await chrome.storage.local.get(['installationUniqueId']);
@@ -1959,9 +2323,8 @@ async function addDataRow(url) {
             const event = new Date();
 
             const userid = "";
-
-            // suitable redact the URL before saving it
-            const message_body = '{ "url":"' + redactSensitiveInfo(url) + '", "local_time":"' + event.toISOString() + '" }';
+            //console.log("deleting: " + id);
+            const message_body = '{ "url":"' + url + '", "local_time":"' + event.toISOString() + '" }';
             console.log("DEBUG" + message_body);
             // Fetch data from web service (replace with your actual API endpoint)
             const response = await fetch(server_url + URI_plugin_user_post_click, {
