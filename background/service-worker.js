@@ -1,9 +1,5 @@
-//var server_url = "https://api-dev.cybotix.no";
-
-
 //const server_url = "https://api.cybotix.no";
-var server_url = "https://api-dev.cybotix.no";
-//var server_url = "http://localhost:3000";
+const server_url = "https://api-dev.cybotix.no";
 
 var URI_plugin_user_post_click = "/plugin_user_post_click";
 var URI_plugin_user_delete_click = "/plugin_user_delete_click";
@@ -19,7 +15,7 @@ const URL_plugin_user_deactivate_agreements = "/plugin_user_deactivate_agreement
 const URL_plugin_user_activate_agreements = "/plugin_user_activate_agreements";
 const URL_plugin_user_set_agreement_active_status = "/plugin_user_set_agreement_active_status";
 
-
+const URL_plugin_data_interface = "/data";
 
 var valid_audience_values = {
     "cybotix-personal-data-commander": "1",
@@ -40,7 +36,6 @@ fetch(configURL)
     config = JSON.parse(JSON.stringify(data));
     // You can now use your config object
     console.log(JSON.stringify(config));
-
 })
 .catch(error => console.error('Error reading config:', error));
 
@@ -100,13 +95,12 @@ function str2ab(str) {
     return buf;
 }
 
-
 /** some URLs should be excluded from capture, such as the user's own email account, or the user's own website.
- * 
- * Technically this is done in two ways:. 
+ *
+ * Technically this is done in two ways:.
  * Firstly By simply excluding whole domains - straight case-insensitive match on the fully qualified domain name (FQDN)
  * Secondly By excluding specific URLs based on regular expressions (regexp)
- * 
+ *
  */
 var domain_capture_exclusion_list = {
     "localhost": "1",
@@ -116,37 +110,46 @@ var domain_capture_exclusion_list = {
     ".aws.amazon.com": "2",
     ".cybotix.no": "2",
     "azure.microsoft.com": "1"
- 
+
 };
 
-
-var url_capture_exclusion_list  = [
+var url_capture_exclusion_list = [
     /example\.com$/, // regex to test if URL ends with 'example.com'
-    /https:\/\/www\.goooogle\.com/ // regex to test if URL is 'https://www.gooogle.com'
+    /https:\/\/www\.goooogle\.com/// regex to test if URL is 'https://www.gooogle.com'
 ];
-
 
 /**
  * Capturing complete URL will include the query string
  * This is desirable. However, it may also contain sensitive information, such as passwords.
  * Rules for redaction are therefore in place. These rules are applied to the query string only.
- *  
+ *
  */
 
-var redactionPatterns = [
-    { pattern: /\/users\/[\w-]+/ig, replacement: '/users/[REDACTED]' },
-    { pattern: /(sessionToken|authToken|accessToken|sessionid)=\w+/ig, replacement: '$1=[REDACTED]' },
-    { pattern: /[\w.-]+@[\w.-]+\.\w+/ig, replacement: '[REDACTED]' },
-    { pattern: /(password|pwd|creditcard|ssn)=\w+/ig, replacement: '$1=[REDACTED]' },
-    { pattern: /(api_key|apikey|client_id|client_secret)=\w+/ig, replacement: '$1=[REDACTED]' }
+var redactionPatterns = [{
+        pattern: /\/users\/[\w-]+/ig,
+        replacement: '/users/[REDACTED]'
+    }, {
+        pattern: /(sessionToken|authToken|accessToken|sessionid)=\w+/ig,
+        replacement: '$1=[REDACTED]'
+    }, {
+        pattern: /[\w.-]+@[\w.-]+\.\w+/ig,
+        replacement: '[REDACTED]'
+    }, {
+        pattern: /(password|pwd|creditcard|ssn)=\w+/ig,
+        replacement: '$1=[REDACTED]'
+    }, {
+        pattern: /(api_key|apikey|client_id|client_secret)=\w+/ig,
+        replacement: '$1=[REDACTED]'
+    }
 ];
 function redactSensitiveInfo(url) {
     return redactionPatterns.reduce(
-        (currentUrl, { pattern, replacement }) => currentUrl.replace(pattern, replacement),
-        url
-    );
+        (currentUrl, {
+            pattern,
+            replacement
+        }) => currentUrl.replace(pattern, replacement),
+        url);
 }
-
 
 /** Check if a unique ID has been set for this extenstion. It not, set one.
  * This ID is used to identify the user with the server without the user having to provide any information.
@@ -259,7 +262,6 @@ function keyExists(key, obj) {
     return obj[key] !== undefined;
 }
 
-
 /* exclude from capture based on the domain name
 // either a wholename match or a domain match
 
@@ -267,23 +269,23 @@ Passing the Fully Qualified DOmain nae of the URL to be checked
 
 First check if the FQDN  is on the exclusion list.
 Then check if the domain is on the exclusion list. With the domain name starting with a "." (dot)
-*/
+ */
 function isOnDomainCaptureExclusionList(FQDN) {
     var excluded = false;
-    const list = getSuperiorDomains(FQDN );
-   //console.log(list);
+    const list = getSuperiorDomains(FQDN);
+    //console.log(list);
 
-for (const item of list) {
-   // console.log(item);
-   // console.log (item in domain_capture_exclusion_list);
-   // console.log ( ("."+item) in domain_capture_exclusion_list);
-    if ( (item in domain_capture_exclusion_list) || ("."+item) in domain_capture_exclusion_list ){
-        excluded = true;
-        return excluded;
+    for (const item of list) {
+        // console.log(item);
+        // console.log (item in domain_capture_exclusion_list);
+        // console.log ( ("."+item) in domain_capture_exclusion_list);
+        if ((item in domain_capture_exclusion_list) || ("." + item)in domain_capture_exclusion_list) {
+            excluded = true;
+            return excluded;
 
+        }
     }
-}
-return excluded
+    return excluded
 
 }
 
@@ -308,10 +310,7 @@ function isUrlMatched(url, regexList) {
     return regexList.some(regex => regex.test(url));
 }
 
-
-
-
-function isExcluded (url){
+function isExcluded(url) {
     var excluded = false;
     var domain = getDomainName(url);
     console.log(domain);
@@ -325,11 +324,10 @@ function isExcluded (url){
     return excluded;
 }
 
-function getDomainName(url) {   
-    var domain = url.replace('http://','').replace('https://','').split(/[/?#]/)[0];
+function getDomainName(url) {
+    var domain = url.replace('http://', '').replace('https://', '').split(/[/?#]/)[0];
     return domain;
 }
-
 
 /* triggered when the plugin is installed or when the user call this function from the GUI
  */
@@ -639,7 +637,7 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
                                     ({
                                         dataaccesstoken,
                                         history_data_dump
-                                    } = newFunction(installationUniqueId, getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"), details.tabId, details.frameId, redir_target, platformtoken));
+                                    } = newDataAccessToken(installationUniqueId, getNamedHeader(h, "X_HTTP_CYBOTIX_DATA_REQUEST"), details.tabId, details.frameId, redir_target, platformtoken));
 
                                 } else {
                                     // there is no data agreement covering the request, prompt the user for one
@@ -805,8 +803,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             console.log(result);
 
             installationUniqueId = result.installationUniqueId;
-console.log(message.details);
-          
+            console.log(message.details);
 
             //          # set expiration time for click data (set expiration time to be equal to the utc timestamp plus the provided value)
 
@@ -824,39 +821,35 @@ console.log(message.details);
 
         });
 
-
-
         return true;
-} else if (message.type == "activateAllDataAgreements") {
-    console.log("activateAllDataAgreements");
-    var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
+    } else if (message.type == "activateAllDataAgreements") {
+        console.log("activateAllDataAgreements");
+        var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
 
-    chrome.storage.local.get(['installationUniqueId']).then(function (result) {
-        //installationUniqueId = result;
-        console.log(result);
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
 
-        installationUniqueId = result.installationUniqueId;
-console.log(message.details);
-      
+            installationUniqueId = result.installationUniqueId;
+            console.log(message.details);
 
-        //          # set expiration time for click data (set expiration time to be equal to the utc timestamp plus the provided value)
+            //          # set expiration time for click data (set expiration time to be equal to the utc timestamp plus the provided value)
 
-        //const suspend_message = [{  "agreementid":"894e89f3-b3a3-4d02-8833-39019b179df3", "agreementid":"e03164d9-e74d-4a0d-a9ac-8e35f0b2c50e"}]
+            //const suspend_message = [{  "agreementid":"894e89f3-b3a3-4d02-8833-39019b179df3", "agreementid":"e03164d9-e74d-4a0d-a9ac-8e35f0b2c50e"}]
 
-        //console.log(suspend_message);
-        return fetch(server_url + URL_plugin_user_activate_agreements, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                [plugin_uuid_header_name]: installationUniqueId
-            },
-            body: JSON.stringify(message.details)
+            //console.log(suspend_message);
+            return fetch(server_url + URL_plugin_user_activate_agreements, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [plugin_uuid_header_name]: installationUniqueId
+                },
+                body: JSON.stringify(message.details)
+            });
+
         });
 
-    });
-
-
-return true;
+        return true;
 
     } else if (message.type == "deleteAccount") {
         console.log("deleteAccount");
@@ -903,7 +896,7 @@ return true;
         // deletes all account data
         // This action removes the user's data from the Cybotix platform
         // The user's data can be completely restored from backup data
-        var installationUniqueId; 
+        var installationUniqueId;
 
         chrome.storage.local.get(['installationUniqueId']).then(function (result) {
             //installationUniqueId = result;
@@ -1042,7 +1035,9 @@ return true;
         return true;
 
     } else if (message.type == "accept_single_datarequest") {
-
+        /** The user has accpeted the agreement in the popup form
+         * Save the agreement in the database an issue a data access token to the requesting party
+         */
         console.log("Received message from content script:", message);
         console.log(message.agreement_details);
         console.log("Received message from content script:", sender);
@@ -1106,6 +1101,7 @@ return true;
             original_request: message.agreement_details.original_message
         };
         console.log(agreement);
+
         // store the agreement in the database
 
         var installationUniqueId; // = await chrome.storage.local.get(['installationUniqueId']);
@@ -1143,22 +1139,28 @@ return true;
             } catch (err) {
                 console.log(err);
             }
+          
+
+            // there has now been created a data agreement, issue a data access token
+            console.log("a data agreement has now been created, issue a data access token");
+           
+            // consider this for later revision. The requestor should be able to get this data in in a separate request.
+            // to the data base and get the data the token gets access to, and send that along as well. 
+            // this function calls a new content scipt on the page and dispatech the data to the URL provided in the original request from the requestor
+            ({
+                dataaccesstoken,
+                history_data_dump
+            } = newDataAccessToken(installationUniqueId, message.agreement_details.original_message, message.agreement_details.tabId, message.agreement_details.frameId, message.agreement_details.redir_target, message.agreement_details.platformtoken));
+            console.log({
+                dataaccesstoken,
+                history_data_dump
+            });
+            // Data and token have been dispatched at this point
+            // Return to the content script that presented the "popup" to the user. 
             console.log("responding back to content script");
             sendResponse({
                 type: "acknowledgment",
                 payload: "ack from background script"
-            });
-
-            // there has now been created a data agreement, issue a data access token
-            console.log("a data agreement has now been created, issue a data access token");
-            // pull out data access token
-            ({
-                dataaccesstoken,
-                history_data_dump
-            } = newFunction(installationUniqueId, message.agreement_details.original_message, message.agreement_details.tabId, message.agreement_details.frameId, message.agreement_details.redir_target, message.agreement_details.platformtoken));
-            console.log({
-                dataaccesstoken,
-                history_data_dump
             });
 
         });
@@ -1194,8 +1196,11 @@ function doGetRequest(url, data, installationUniqueId, keyName) {
     });
 }
 
-// * create data access token*/
-function newFunction(installationUniqueId, data_request, tabId, frameId, redir_target, platformtoken) {
+/* create data access token
+Send it to the requestor by way of a contentscript that dispatces it
+*/
+
+function newDataAccessToken(installationUniqueId, data_request, tabId, frameId, redir_target, platformtoken) {
     console.log("newFunction");
     console.log(installationUniqueId);
 
@@ -1229,15 +1234,19 @@ function newFunction(installationUniqueId, data_request, tabId, frameId, redir_t
             const grants = getGrantsFromDataAccessToken(dataaccesstoken);
             console.log(grants);
 
-            return getSearchHistoryForItems(grants);
+            //return getSearchHistoryForItems(grants);
+            return getClickHistoryForItems(grants, dataaccesstoken, platformtoken, data_request);
 
         }).then(function (historyItems) {
             console.log(historyItems);
-
-            //history_data_dump = historyItems.filter(item => regexPattern.test(item.url));
-            history_data_dump = filterKeysFromArray(historyItems, ['url', 'title', 'lastVisitTime', 'typedCount', 'visitCount']);
-            console.log(history_data_dump);
-
+            try{
+            history_data_dump = filterKeysFromArray(historyItems, ['url', 'local_time', 'utc']);
+    //        history_data_dump = historyItems;
+}catch(err){
+    // likely no data was returned
+    history_data_dump=[];
+}
+           
             // issue a redirect to the target URL, with the token as a parameter
             // send a messate back to the content script to issue the redirect
             return chrome.scripting
@@ -1249,9 +1258,8 @@ function newFunction(installationUniqueId, data_request, tabId, frameId, redir_t
                 files: ["./content_scripts/send-data-access-token.js"],
             });
         }).then(function (response) {
-
             console.log(response);
-
+            
             const message = {
                 tabId: Number(tabId),
                 frameId: Number(frameId),
@@ -1280,13 +1288,7 @@ function newFunction(installationUniqueId, data_request, tabId, frameId, redir_t
                 console.error(chrome.runtime.lastError);
                 return;
             }
-        }).then(function (resp) {
-            console.log(resp);
 
-            if (chrome.runtime.lastError) {
-                console.error(chrome.runtime.lastError);
-                return;
-            }
         }).catch(function (two) {
             console.log(two);
         });
@@ -1344,6 +1346,41 @@ function getSearchHistoryForItems(data) {
         }).catch(error => {
             reject(error);
         });
+    });
+}
+
+//
+// URL_plugin_data_interface
+// search click history
+// this is the call the dataaccess token recipients will do themselves.
+function getClickHistoryForItems(grants, dataaccesstoken, platformtoken, datarequest) {
+    console.log("getClickHistoryForItems");
+    console.log(grants);
+    console.log(dataaccesstoken);
+    console.log(base64urlDecode(dataaccesstoken.split('.')[1]));
+    console.log(platformtoken);
+    console.log(datarequest);
+    console.log(base64Decode(datarequest));
+
+    return new Promise((resolve, reject) => {
+
+        const headers = {
+            'X_HTTP_CYBOTIX_DATA_ACCESSTOKEN': dataaccesstoken,
+            'User-Agent': 'Node.js/14.0',
+            'X_HTTP_CYBOTIX_PLATFORM_TOKEN': platformtoken,
+            'X_HTTP_CYBOTIX_DATA_REQUEST': datarequest
+        }
+
+        fetch(server_url + URL_plugin_data_interface, {
+            method: 'GET',
+            headers: headers,
+
+        }).then(function (data) {
+            console.log(data);
+            resolve(data.json());
+
+        });
+
     });
 }
 
@@ -1940,7 +1977,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 
 // Function to use "fetch" to delete a data row
 async function addDataRow(url) {
-    console.debug("DEBUG,capture addDataRow" );
+    console.debug("DEBUG,capture addDataRow");
 
     //console.debug("DEBUG,capture addDataRow +domain" + url.replace(/.*\:\/\/([^:\/]*)[:\/].*/,"$1") );
 
@@ -2036,6 +2073,7 @@ function str2ab(str) {
 function str2base64(str) {
     return btoa(str);
 }
+
 function base642str(base64) {
     return atob(base64);
 }

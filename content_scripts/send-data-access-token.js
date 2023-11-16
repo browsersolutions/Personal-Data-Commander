@@ -32,6 +32,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.log(X_HTTP_CYBOTIX_DATA_ACCESSTOKEN);
         console.log(X_HTTP_CYBOTIX_DATA_REQUEST);
 
+        // call to the enpoint proived in the request 
+        //  -> the location where the requesting party wants the answer/data/data access token to be set to.
         fetch(message.message.newurl, {
             method: 'POST',
             headers: {

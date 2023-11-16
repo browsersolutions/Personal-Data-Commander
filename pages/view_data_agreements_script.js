@@ -1,3 +1,4 @@
+//const server_url = "https://api.cybotix.no";
 const server_url = "https://api-dev.cybotix.no";
 
 const URI_plugin_user_read_all_agreements = "/plugin_user_read_all_data_agreements";
@@ -421,7 +422,8 @@ document.getElementById('dataAgreementsRefreshButton').addEventListener('click',
 document.getElementById('dataAgreementsActivateAllButton').addEventListener('click', function() {
   // Send a message to the service worker to perform the backup
   chrome.runtime.sendMessage({
-    type: 'activateAllDataAgreements'
+    type: 'activateAllDataAgreements',
+    details: extractAgreementIds()
   }, response => {
       console.log(response);
     
@@ -440,8 +442,7 @@ console.log(extractAgreementIds());
     details: extractAgreementIds()
   }, response => {
       console.log(response);
-    
-  });
+    });
 });
 
 

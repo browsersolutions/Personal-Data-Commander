@@ -1,5 +1,4 @@
-
-
+//const server_url = "https://api.cybotix.no";
 const server_url = "https://api-dev.cybotix.no";
 
 
@@ -80,10 +79,15 @@ async function fetchData() {
         // Get table body element
         const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
 
-        if (tableBody.rows.length) {
-            tableBody.rows.forEach(row => {
-                if (row) row.deleteRow();
-            });
+        var list = tableBody.rows;
+        try {
+            if (tableBody.rows.length) {
+                for (var li = list.length - 1; li >= 0; li--) {
+                    list[li].remove();
+                }
+            }
+        } catch (e) {
+            console.error(e);
         }
         // Loop through data and populate the table
         data.forEach(row => {
