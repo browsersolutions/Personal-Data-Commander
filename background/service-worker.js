@@ -113,10 +113,7 @@ var domain_capture_exclusion_list = {
 
 };
 
-var url_capture_exclusion_list = [
-    /example\.com$/, // regex to test if URL ends with 'example.com'
-    /https:\/\/www\.goooogle\.com/// regex to test if URL is 'https://www.gooogle.com'
-];
+
 
 /**
  * Capturing complete URL will include the query string
@@ -175,11 +172,9 @@ chrome.storage.local.get(['installationUniqueId'], function (result) {
         chrome.storage.local.set({
             installationUniqueId: installationUniqueId
         }).then(function (res) {
-
             // Call to upload 24 hours of browising history to the server, in order that the user may have some starting data to "play" with.
             // This data is subject to some immediate redactions, and will be automatically deleted within 72 hours.
             historyImport(24);
-
         });
         /* If installationUniqueId has not bee set in memory it means that this is a new installation.
         It also means there is no click history in the database for this installation.
@@ -187,13 +182,29 @@ chrome.storage.local.get(['installationUniqueId'], function (result) {
         Take a look at the browser history to see if there is a click history there.
         If so, import 48 hours of it into the database. The user may then exclude/edit/remove as desired before engaging in any sharing.
 
-
          */
 
     } else {
         console.debug("installationUniqueId already set (" + result.installationUniqueId + ")");
+        // as a temprary measure allways import the last xx hours of click history at every restart
+        historyImport(4);
     }
 });
+
+// check of there has been set a lifetime value for clickdata if not, set it to 72 hours.
+
+  chrome.storage.local.get(["clickDataLifetimeHours"]).then(function (result){
+    if (result.clickDataLifetimeHours) {
+        console.log("Value currently is SET " + result.clickDataLifetimeHours);
+
+    }else{
+        console.log("Value currently is NOT SET: " + result.clickDataLifetimeHours);
+        chrome.storage.local.set({ clickDataLifetimeHours: 72 }).then(function (result){
+            console.log("Value is set to default");
+          });
+    }
+  });
+
 
 /* This imports url from the browser history into the user's data account with Cybotix.
 Once there the user may opt to share, redact or delete this data as my be appropriate.
@@ -220,20 +231,34 @@ function historyImport(lastHours) {
         }, (historyItems) => {
             // Process the history items
             const historyDataPromises = historyItems.map(item => {
+                console.log(JSON.stringify(item));
                     // POST request for each history item
-                    return fetch(server_url + URI_plugin_user_post_click, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            [plugin_uuid_header_name]: installationUniqueId,
-                        },
-                        body: JSON.stringify({
-                            url: item.url,
-                            local_time: convertTimestamp(item.lastVisitTime)
-                        })
-                    })
-                    .then(response => response.json()) // parse JSON response
-                    .catch(error => console.error('Error sending POST request:', error));
+                    console.log(item.lastVisitTime);
+                    console.log((convertTimestampToISO(item.lastVisitTime)).replace("T", " ").replace(/....Z$/, ""));
+
+                    console.log(Math.round(item.lastVisitTime) + 72 * 60 * 60 );
+                    console.log(convertTimestampToISO(Math.round(item.lastVisitTime) + 72 * 60 * 60 ));
+                    
+                    console.log((convertTimestampToISO(Math.round(item.lastVisitTime) + 72 * 60 * 60 * 1000 )).replace("T", " ").replace(/....Z$/, ""));
+                    
+                    const local_time = (convertTimestampToISO(item.lastVisitTime)).replace("T", " ").replace(/....Z$/, "");
+                    const expiration = (convertTimestampToISO(Math.round(item.lastVisitTime) + 72 * 60 * 60 * 1000 )).replace("T", " ").replace(/....Z$/, "");
+             
+                    addDataRow_time(item.url,local_time, expiration);
+
+      //              return fetch(server_url + URI_plugin_user_post_click, {
+      //                  method: 'POST',
+      //                  headers: {
+      //                      'Content-Type': 'application/json',
+      //                      [plugin_uuid_header_name]: installationUniqueId,
+      //                  },
+      //                  body: JSON.stringify({
+      //                      url: item.url,
+      //                      local_time: convertTimestamp(item.lastVisitTime)
+     //                   })
+    //               })
+    //                .then(response => response.json()) // parse JSON response
+     //               .catch(error => console.error('Error sending POST request:', error));
                 });
 
             // Wait for all POST requests to complete
@@ -296,31 +321,40 @@ function getSuperiorDomains(fqdn) {
     for (let i = 0; i < parts.length - 1; i++) {
         superiorDomains.push(parts.slice(i).join('.'));
     }
-
     return superiorDomains;
 }
 
 function isOnUrlCaptureExclusionList(url) {
     //return domain_capture_exclusion_list[key] !== undefined;
     return isUrlMatched(url, url_capture_exclusion_list);
-
 }
 
 function isUrlMatched(url, regexList) {
     return regexList.some(regex => regex.test(url));
 }
 
+
+/**
+ * The protocol is not part of the pattern matching
+ */
+var url_capture_exclusion_list = [
+    /porn/i, // regex to test if URL contains the word "porn" anywhere (case-insensitive)
+    /[^\/]*xxx/i, // regex to test if domain contains "xxx" (case-insensitive)
+    /sex/i, // regex to test if URL contains the word "sex" anywhere (case-insensitive)
+    /www\.goooogle\.com/// regex to test if URL is 'www.goooogle.com'
+];
 function isExcluded(url) {
     var excluded = false;
     var domain = getDomainName(url);
-    console.log(domain);
-    if (isOnDomainCaptureExclusionList(domain)) {
+   if (isOnDomainCaptureExclusionList(domain)) {
         excluded = true;
     } else {
         if (isOnUrlCaptureExclusionList(url)) {
             excluded = true;
+        }else{
         }
     }
+    //console.debug(url + " is excluded from capture: " + excluded );
     return excluded;
 }
 
@@ -333,7 +367,6 @@ function getDomainName(url) {
  */
 function setupDefaultCaptureExclusionRules() {
     console.log('setupDefaultCaptureExclusionRules');
-
 }
 
 var callback = function (details) {
@@ -428,10 +461,6 @@ X_HTTP_CYBOTIX_DATA_REQUEST
 This header is used to request data from the user. The header contains a JWT token,
 This could come along with a third header, X_HTTP_CYBOTIX_QUERY_REDIRECT
 
-
-
-
-
  */
 chrome.webRequest.onHeadersReceived.addListener(function (details) {
     // console.log('################################');
@@ -454,7 +483,6 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
         const headerNames = getHeaderNames(details.responseHeaders);
         console.log('HTTP header names:', headerNames);
         // check for presence of cybotix headers and take appropriate action based on what additional headers are present
-
 
         if (headerNames.includes("X_HTTP_CYBOTIX_PLATFORM_TOKEN")) {
 
@@ -483,7 +511,6 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
 
                     // option 3. X_HTTP_CYBOTIX_QUERY_PLUGIN
                     // just a check to see if the plugin is present in the browser and responsive. No data is requested.
-
 
                     if (headerNames.includes("X_HTTP_CYBOTIX_QUERY_PLUGIN")) {
                         const requesttoken = getNamedHeader(h, "X_HTTP_CYBOTIX_QUERY_PLUGIN");
@@ -1975,9 +2002,19 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 },
     ["extraHeaders", "requestHeaders"]);
 
-// Function to use "fetch" to delete a data row
-async function addDataRow(url) {
-    console.debug("DEBUG,capture addDataRow");
+
+    async function addDataRow(url) {
+        console.debug("DEBUG,capture addDataRow");
+    
+        const local_time = event.toISOString();
+        const expiration = convertTimestamp(event.getTime() + (clickDataLifetimeHours.clickDataLifetimeHours * 60 * 60 * 1000));
+ 
+        addDataRow(url, local_time, expiration);
+
+    }    
+
+async function addDataRow_time(url, local_time, expiration) {
+    console.debug("DEBUG,capture addDataRow_time");
 
     //console.debug("DEBUG,capture addDataRow +domain" + url.replace(/.*\:\/\/([^:\/]*)[:\/].*/,"$1") );
 
@@ -1985,11 +2022,14 @@ async function addDataRow(url) {
 
     console.debug("DEBUG,capture addDataRow, domain: " + domain);
 
-    console.debug("DEBUG,capture addDataRow, isExcluded: " + isExcluded(domain));
+   // console.debug("DEBUG,capture addDataRow, isExcluded: " + isExcluded(domain));
     if (!isExcluded(domain)) {
         try {
-
             let installationUniqueId = await chrome.storage.local.get(['installationUniqueId']);
+
+// get lifetime  from system settings
+
+let clickDataLifetimeHours = await chrome.storage.local.get(['clickDataLifetimeHours']);
 
             const browser_id = installationUniqueId.installationUniqueId;
 
@@ -1998,8 +2038,20 @@ async function addDataRow(url) {
             const userid = "";
 
             // suitable redact the URL before saving it
-            const message_body = '{ "url":"' + redactSensitiveInfo(url) + '", "local_time":"' + event.toISOString() + '" }';
-            console.log("DEBUG" + message_body);
+            const message_body = { 
+                url : redactSensitiveInfo(url),
+                local_time:  local_time,
+                expiration: expiration
+             };
+
+             const message_body2 = { 
+                url : redactSensitiveInfo(url),
+                local_time:  local_time
+             };
+
+
+
+            console.log("DEBUG" + JSON.stringify(message_body));
             // Fetch data from web service (replace with your actual API endpoint)
             const response = await fetch(server_url + URI_plugin_user_post_click, {
                     method: 'POST',
@@ -2007,7 +2059,7 @@ async function addDataRow(url) {
                         'Content-Type': 'application/json',
                         [plugin_uuid_header_name]: browser_id
                     },
-                    body: message_body // example IDs, replace as necessary
+                    body: JSON.stringify(message_body) // example IDs, replace as necessary
                 });
             //console.log(response);
             // Check for errors
@@ -2092,4 +2144,16 @@ function filterKeysFromArray(jsonArray, whitelist) {
         console.log(filteredItem);
         return filteredItem;
     });
+}
+
+
+function convertTimestampToISO(timestamp) {
+    // Round the timestamp to remove fractional milliseconds
+    const roundedTimestamp = Math.round(timestamp);
+
+    // Create a Date object
+    const date = new Date(roundedTimestamp);
+
+    // Convert to ISO 8601 format
+    return date.toISOString();
 }
