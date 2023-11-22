@@ -386,6 +386,7 @@ a {
     background-size: cover;
 }
 .deleteAllBtn {
+  cursor: pointer;
   background: rgb(196, 6, 6);
   color: #fff;
   border: 0;
@@ -525,6 +526,10 @@ a {
 
 .justify-content-end {
   justify-content: end;
+}
+
+.align-items-center {
+  align-items: center;
 }
 
 .justify-content-between {

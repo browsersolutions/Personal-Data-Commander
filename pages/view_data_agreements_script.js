@@ -330,8 +330,8 @@ async function fetchData() {
 
       // action buttons
       const cell7 = newRow.insertCell(6);
-      cell7.appendChild(deleteButton);
       cell7.appendChild(viewButton);
+      cell7.appendChild(deleteButton);
       cell4.appendChild(suspendActButton);
 
       const cell8 = newRow.insertCell(7);

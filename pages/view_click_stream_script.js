@@ -189,36 +189,9 @@ async function fetchData() {
         window.open(row.url, "_blank")
       );
 
-      //Suspend/Active button
-      const suspendActButton = document.createElement("span");
-      suspendActButton.innerHTML =
-        '<label><input type="checkbox" placeholder="Enter text"><span></span></label>';
-
-      // Add classes using classList with error handling
-      const inputElement = suspendActButton.querySelector("input");
-      if (inputElement) {
-        inputElement.classList.add("input-class");
-      }
-
-      const labelElement = suspendActButton.querySelector("label");
-      if (labelElement) {
-        labelElement.classList.add("switch");
-      }
-      const spanElement = suspendActButton.querySelector("span");
-      if (spanElement) {
-        spanElement.classList.add("slider");
-      }
-      suspendActButton.addEventListener("change", async (e) => {
-        if (e.target.checked) {
-          await suspendToggle("active", row.linkid);
-        } else {
-          await suspendToggle("inactive", row.linkid);
-        }
-      });
       const cell4 = newRow.insertCell(3);
-      cell4.appendChild(deleteButton);
       cell4.appendChild(viewButton);
-      cell4.appendChild(suspendActButton);
+      cell4.appendChild(deleteButton);
 
       // Adding data-label for mobile responsive
       cell1.setAttribute("data-label", "UTC");
