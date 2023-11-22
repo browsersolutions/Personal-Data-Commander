@@ -1,0 +1,7 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+	<title>icons8-delete-svg</title>
+	<style>
+		.s0 { fill: #d70808 } 
+	</style>
+	<path id="Layer" fill-rule="evenodd" class="s0" d="m14 2l1 1h4c0.6 0 1 0.4 1 1 0 0.6-0.4 1-1 1h-14c-0.6 0-1-0.4-1-1 0-0.6 0.4-1 1-1h4l1-1zm5 5v13c0 1.1-0.9 2-2 2h-10c-1.1 0-2-0.9-2-2v-13zm-11 3v9c0 0.6 0.4 1 1 1 0.6 0 1-0.4 1-1v-9c0-0.6-0.4-1-1-1-0.6 0-1 0.4-1 1zm6 0v9c0 0.6 0.4 1 1 1 0.6 0 1-0.4 1-1v-9c0-0.6-0.4-1-1-1-0.6 0-1 0.4-1 1z"/>
+</svg>

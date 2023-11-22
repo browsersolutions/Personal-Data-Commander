@@ -5,6 +5,9 @@
   "author": "Cybotix Team",
   "homepage_url": "https://www.cybotix.no/",
   "manifest_version": 3,
+  "chrome_url_overrides": {
+    "newtab": "./pages/offers.html"
+  },
   "content_scripts": [
     {
       "matches": ["*://*/*"],
