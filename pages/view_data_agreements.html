@@ -129,53 +129,46 @@
 
         <!-- end of pager header -->
 
-        <!-- tab content start here -->
-        <div class="container">
-          <div class="searchWrap">
-            <input type="text" class="inputField" id="filterContent"
-            placeholder="Filter Content" ">
-            <span class="searchIcon"></span>
-          </div>
-          <div class="d-flex justify-content-end">
-            <button id="dataAgreementsRefreshButton" class="refreshBtn">
-              Refresh
-            </button>
-            <button id="dataAgreementsSuspendAllButton" class="suspendAllBtn">
-              Suspend All
-            </button>
-            <button id="dataAgreementsActivateAllButton" class="activateAllBtn">
-              Activate All
-            </button>
-          </div>
-          <!-- tabs wrapper -->
-          <div class="tabsWrap">
-            <ul class="navTabs">
-              <li class="navItem">
-                <a class="navLink" href="view_click_stream.html"
-                  >View Click Stream</a
-                >
-              </li>
-              <li class="navItem">
-                <a class="navLink active" href="view_data_agreements.html"
-                  >View Data Agreements</a
-                >
-              </li>
-            </ul>
-            <!-- Empty table structure -->
-            <div class="tabContent scrollable-table">
-              <div class="tableResponsive">
-                <table id="dataTable">
-                  <thead>
-                    <tr class="fixed-header">
-                      <th>ID</th>
-                      <!-- <th class="sortableCol">universaltime</th> -->
-                      <th class="sortableCol">localtime</th>
-                      <th class="sortableCol">counter party name</th>
-                      <th>agreement</th>
-                      <th>action</th>
-                    </tr>
-                    <!-- Add a filter row -->
-                    <!-- <tr class="fixed-header">
+      <!-- tab content start here -->
+      <div class="container">
+        <div class="searchWrap">
+          <input type="text" class="inputField" id="filterContent" placeholder="Filter Content" ">
+      <span class=" searchIcon"></span>
+        </div>
+
+        
+        <div class="d-flex justify-content-end">
+          <button id="dataAgreementsRefreshButton" class="refreshBtn">Refresh</button>
+          <button id="dataAgreementsSuspendAllButton" class="suspendAllBtn">Suspend All</button>
+          <button id="dataAgreementsActivateAllButton" class="activateAllBtn">Activate All</button>
+          
+        </div>
+        <!-- tabs wrapper -->
+        <div class="tabsWrap">
+          <ul class="navTabs">
+            <li class="navItem">
+              <a class="navLink " href="view_click_stream.html">View Click Stream</a>
+            </li>
+            <li class="navItem">
+              <a class="navLink active" href="view_data_agreements.html">View Data Agreements</a>
+            </li>
+          </ul>
+          <!-- Empty table structure -->
+          <div class="tabContent scrollable-table">
+            <div class="tableResponsive">
+              <table id="dataTable">
+                <thead>
+                  <tr class="fixed-header">
+                    <th>ID</th>
+                    <!-- <th class="sortableCol">universaltime</th> -->
+                    <th class="sortableCol">localtime</th>
+                    <th class="sortableCol">counter party name</th>
+                    <th>agreement</th>
+                    <th>action</th>
+
+                  </tr>
+                  <!-- Add a filter row -->
+                  <!-- <tr class="fixed-header">
               <th class="filterableCol"></th> <!//-- Empty cell --//>
               <th class="filterableCol">filter:<input type="text" id="filterContent" placeholder="Filter Content" "></th>
               <th class="filterableCol"><input type="text" id="filterContent" placeholder="Filter Content" "></th>

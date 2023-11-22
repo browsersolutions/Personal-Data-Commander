@@ -3,6 +3,8 @@ const server_url = "https://api-dev.cybotix.no";
 
 var URI_plugin_user_post_click = "/plugin_user_post_click";
 var URI_plugin_user_delete_click = "/plugin_user_delete_click";
+var URL_plugin_user_delete_all_clickdata = "/plugin_user_delete_all_clickdata";
+var URI_plugin_user_delete_expired_clickdata = "/plugin_user_delete_expired_clickdata";
 var URI_plugin_user_create_dataaccess_token = "/plugin_user_create_dataaccess_token";
 var URI_plugin_user_query_accesstoken_status = "/plugin_user_query_accesstoken_status";
 var URI_plugin_user_import = "/plugin_user_import"
@@ -113,8 +115,6 @@ var domain_capture_exclusion_list = {
 
 };
 
-
-
 /**
  * Capturing complete URL will include the query string
  * This is desirable. However, it may also contain sensitive information, such as passwords.
@@ -193,18 +193,19 @@ chrome.storage.local.get(['installationUniqueId'], function (result) {
 
 // check of there has been set a lifetime value for clickdata if not, set it to 72 hours.
 
-  chrome.storage.local.get(["clickDataLifetimeHours"]).then(function (result){
+chrome.storage.local.get(["clickDataLifetimeHours"]).then(function (result) {
     if (result.clickDataLifetimeHours) {
         console.log("Value currently is SET " + result.clickDataLifetimeHours);
 
-    }else{
+    } else {
         console.log("Value currently is NOT SET: " + result.clickDataLifetimeHours);
-        chrome.storage.local.set({ clickDataLifetimeHours: 72 }).then(function (result){
+        chrome.storage.local.set({
+            clickDataLifetimeHours: 72
+        }).then(function (result) {
             console.log("Value is set to default");
-          });
+        });
     }
-  });
-
+});
 
 /* This imports url from the browser history into the user's data account with Cybotix.
 Once there the user may opt to share, redact or delete this data as my be appropriate.
@@ -231,34 +232,34 @@ function historyImport(lastHours) {
         }, (historyItems) => {
             // Process the history items
             const historyDataPromises = historyItems.map(item => {
-                console.log(JSON.stringify(item));
+                    console.log(JSON.stringify(item));
                     // POST request for each history item
                     console.log(item.lastVisitTime);
                     console.log((convertTimestampToISO(item.lastVisitTime)).replace("T", " ").replace(/....Z$/, ""));
 
-                    console.log(Math.round(item.lastVisitTime) + 72 * 60 * 60 );
-                    console.log(convertTimestampToISO(Math.round(item.lastVisitTime) + 72 * 60 * 60 ));
-                    
-                    console.log((convertTimestampToISO(Math.round(item.lastVisitTime) + 72 * 60 * 60 * 1000 )).replace("T", " ").replace(/....Z$/, ""));
-                    
-                    const local_time = (convertTimestampToISO(item.lastVisitTime)).replace("T", " ").replace(/....Z$/, "");
-                    const expiration = (convertTimestampToISO(Math.round(item.lastVisitTime) + 72 * 60 * 60 * 1000 )).replace("T", " ").replace(/....Z$/, "");
-             
-                    addDataRow_time(item.url,local_time, expiration);
+                    console.log(Math.round(item.lastVisitTime) + 72 * 60 * 60);
+                    console.log(convertTimestampToISO(Math.round(item.lastVisitTime) + 72 * 60 * 60));
 
-      //              return fetch(server_url + URI_plugin_user_post_click, {
-      //                  method: 'POST',
-      //                  headers: {
-      //                      'Content-Type': 'application/json',
-      //                      [plugin_uuid_header_name]: installationUniqueId,
-      //                  },
-      //                  body: JSON.stringify({
-      //                      url: item.url,
-      //                      local_time: convertTimestamp(item.lastVisitTime)
-     //                   })
-    //               })
-    //                .then(response => response.json()) // parse JSON response
-     //               .catch(error => console.error('Error sending POST request:', error));
+                    console.log((convertTimestampToISO(Math.round(item.lastVisitTime) + 72 * 60 * 60 * 1000)).replace("T", " ").replace(/....Z$/, ""));
+
+                    const local_time = (convertTimestampToISO(item.lastVisitTime)).replace("T", " ").replace(/....Z$/, "");
+                    const expiration = (convertTimestampToISO(Math.round(item.lastVisitTime) + 72 * 60 * 60 * 1000)).replace("T", " ").replace(/....Z$/, "");
+
+                    addDataRow_time(item.url, local_time, expiration);
+
+                    //              return fetch(server_url + URI_plugin_user_post_click, {
+                    //                  method: 'POST',
+                    //                  headers: {
+                    //                      'Content-Type': 'application/json',
+                    //                      [plugin_uuid_header_name]: installationUniqueId,
+                    //                  },
+                    //                  body: JSON.stringify({
+                    //                      url: item.url,
+                    //                      local_time: convertTimestamp(item.lastVisitTime)
+                    //                   })
+                    //               })
+                    //                .then(response => response.json()) // parse JSON response
+                    //               .catch(error => console.error('Error sending POST request:', error));
                 });
 
             // Wait for all POST requests to complete
@@ -266,7 +267,6 @@ function historyImport(lastHours) {
                 console.log('All history items have been sent', results);
             });
         });
-
     });
 }
 
@@ -307,11 +307,9 @@ function isOnDomainCaptureExclusionList(FQDN) {
         if ((item in domain_capture_exclusion_list) || ("." + item)in domain_capture_exclusion_list) {
             excluded = true;
             return excluded;
-
         }
     }
     return excluded
-
 }
 
 function getSuperiorDomains(fqdn) {
@@ -333,7 +331,6 @@ function isUrlMatched(url, regexList) {
     return regexList.some(regex => regex.test(url));
 }
 
-
 /**
  * The protocol is not part of the pattern matching
  */
@@ -343,20 +340,23 @@ var url_capture_exclusion_list = [
     /sex/i, // regex to test if URL contains the word "sex" anywhere (case-insensitive)
     /www\.goooogle\.com/// regex to test if URL is 'www.goooogle.com'
 ];
+
+
 function isExcluded(url) {
     var excluded = false;
+    console.log("consider for possible exclusion the url: " + url );
     var domain = getDomainName(url);
-   if (isOnDomainCaptureExclusionList(domain)) {
+    if (isOnDomainCaptureExclusionList(domain)) {
         excluded = true;
     } else {
         if (isOnUrlCaptureExclusionList(url)) {
             excluded = true;
-        }else{
-        }
+        } else {}
     }
     //console.debug(url + " is excluded from capture: " + excluded );
     return excluded;
 }
+
 
 function getDomainName(url) {
     var domain = url.replace('http://', '').replace('https://', '').split(/[/?#]/)[0];
@@ -474,14 +474,14 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
     console.log(details.type);
 
     if (details.type == "main_frame" || details.type == "sub_frame") {
-        console.log(JSON.stringify(details));
+        //console.log(JSON.stringify(details));
+        console.log(details.url);
 
-        console.log(details.type);
         var counterparty_id;
         var platformtokencontent;
         const h = details.responseHeaders;
         const headerNames = getHeaderNames(details.responseHeaders);
-        console.log('HTTP header names:', headerNames);
+        //console.log('HTTP header names:', headerNames);
         // check for presence of cybotix headers and take appropriate action based on what additional headers are present
 
         if (headerNames.includes("X_HTTP_CYBOTIX_PLATFORM_TOKEN")) {
@@ -957,6 +957,86 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 console.log(err);
             }
         });
+    } else if (message.type == "deleteAllClickData") {
+        console.log("deleteAllClickData");
+        // deletes all click history data
+     
+        var installationUniqueId;
+
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+
+            del_mess = {
+                browserid: installationUniqueId
+            }
+
+            // Fetch data from web service (replace with your actual API endpoint)
+
+            return fetch(server_url + URL_plugin_user_delete_all_clickdata, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [plugin_uuid_header_name]: installationUniqueId
+                },
+               
+            });
+        }).then(function (response) {
+            console.log(response);
+
+            // Check for errors
+            try {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        });
+    } else if (message.type == "deleteExpiredClickData") {
+        console.log("deleteExpiredClickData");
+        // deletes all expired click data
+    
+        var installationUniqueId;
+
+        chrome.storage.local.get(['installationUniqueId']).then(function (result) {
+            //installationUniqueId = result;
+            console.log(result);
+
+            installationUniqueId = result.installationUniqueId;
+
+            // Create a Date object
+            const date = new Date();
+            const local_time = date.toISOString(); 
+            del_mess = {
+                local_time: local_time
+            }
+
+            // Fetch data from web service (replace with your actual API endpoint)
+
+            return fetch(server_url + URI_plugin_user_delete_expired_clickdata, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [plugin_uuid_header_name]: installationUniqueId
+                },
+                body: JSON.stringify(del_mess) 
+               
+            });
+        }).then(function (response) {
+            console.log(response);
+
+            // Check for errors
+            try {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        });
 
     } else if (message.type == "importData") {
         console.log("importData");
@@ -1166,13 +1246,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             } catch (err) {
                 console.log(err);
             }
-          
 
             // there has now been created a data agreement, issue a data access token
             console.log("a data agreement has now been created, issue a data access token");
-           
+
             // consider this for later revision. The requestor should be able to get this data in in a separate request.
-            // to the data base and get the data the token gets access to, and send that along as well. 
+            // to the data base and get the data the token gets access to, and send that along as well.
             // this function calls a new content scipt on the page and dispatech the data to the URL provided in the original request from the requestor
             ({
                 dataaccesstoken,
@@ -1183,7 +1262,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 history_data_dump
             });
             // Data and token have been dispatched at this point
-            // Return to the content script that presented the "popup" to the user. 
+            // Return to the content script that presented the "popup" to the user.
             console.log("responding back to content script");
             sendResponse({
                 type: "acknowledgment",
@@ -1225,7 +1304,7 @@ function doGetRequest(url, data, installationUniqueId, keyName) {
 
 /* create data access token
 Send it to the requestor by way of a contentscript that dispatces it
-*/
+ */
 
 function newDataAccessToken(installationUniqueId, data_request, tabId, frameId, redir_target, platformtoken) {
     console.log("newFunction");
@@ -1266,14 +1345,14 @@ function newDataAccessToken(installationUniqueId, data_request, tabId, frameId, 
 
         }).then(function (historyItems) {
             console.log(historyItems);
-            try{
-            history_data_dump = filterKeysFromArray(historyItems, ['url', 'local_time', 'utc']);
-    //        history_data_dump = historyItems;
-}catch(err){
-    // likely no data was returned
-    history_data_dump=[];
-}
-           
+            try {
+                history_data_dump = filterKeysFromArray(historyItems, ['url', 'local_time', 'utc']);
+                //        history_data_dump = historyItems;
+            } catch (err) {
+                // likely no data was returned
+                history_data_dump = [];
+            }
+
             // issue a redirect to the target URL, with the token as a parameter
             // send a messate back to the content script to issue the redirect
             return chrome.scripting
@@ -1286,7 +1365,7 @@ function newDataAccessToken(installationUniqueId, data_request, tabId, frameId, 
             });
         }).then(function (response) {
             console.log(response);
-            
+
             const message = {
                 tabId: Number(tabId),
                 frameId: Number(frameId),
@@ -1470,7 +1549,9 @@ function getActiveTab() {
     });
 }
 
+
 // attach cybotix headers to outbound requests
+/* Ìs this needed ?
 chrome.webRequest.onBeforeSendHeaders.addListener(
     function (details) {
     for (var i = 0; i < details.requestHeaders.length; ++i) {
@@ -1486,6 +1567,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
     urls: ['<all_urls>']
 },
     ['requestHeaders', 'extraHeaders']);
+*/
 
 function getGrantsFromDataAccessToken(token) {
     console.log("getGrantsFromDataAccessToken");
@@ -1965,27 +2047,28 @@ function isValidJSON(text) {
  * The URL is stored with the users data account for a limited period and is available for inspection/alteration/deletion by the user.
  */
 chrome.webRequest.onBeforeSendHeaders.addListener(
-    (details) => {
-    //console.log("TEST");
-    //console.log(JSON.stringify(details));
-    // console.log(chrome.runtime.id);
+    possibleClickCapture, {
+    urls: ["<all_urls>"],
+    types: ["main_frame", "sub_frame"]
+},
+    ["extraHeaders", "requestHeaders"]);
 
-    //console.log("type: "+details.type);
 
-    //console.log("timeStamp: "+details.timeStamp);
-    //console.log("------------------------");
+    function possibleClickCapture(e) {
+        console.log("type: "+(e.type));
 
-    if (details.type == "main_frame") {
+    if (e.type == "main_frame") {
         // capture this request
         // send to server
 
-        console.log("capture url: " + details.url);
+        console.log("### capture url: " + e.url);
         //    console.log(JSON.stringify(details));
-        console.log("apture DEBUG,calling addDataRow");
+        console.log("capture DEBUG,calling addDataRow");
 
         // stor the url in the database
-        addDataRow(details.url);
-
+         addDataRow(e.url).then(function( res){
+            console.log("addDataRow result: " + res);
+         });
     }
 
     // Only a limited set of request types are of interest here.
@@ -1995,88 +2078,100 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
     // The plugin GUI likewise gives access to the captured data on the server-side and allows for immediate deletion.
 
     // Captured data is by default deleted after 7 days.
-
-}, {
-    urls: ["<all_urls>"],
-    types: ["main_frame", "sub_frame"]
-},
-    ["extraHeaders", "requestHeaders"]);
-
-
-    async function addDataRow(url) {
-        console.debug("DEBUG,capture addDataRow");
-    
-        const local_time = event.toISOString();
-        const expiration = convertTimestamp(event.getTime() + (clickDataLifetimeHours.clickDataLifetimeHours * 60 * 60 * 1000));
- 
-        addDataRow(url, local_time, expiration);
-
-    }    
-
-async function addDataRow_time(url, local_time, expiration) {
-    console.debug("DEBUG,capture addDataRow_time");
-
-    //console.debug("DEBUG,capture addDataRow +domain" + url.replace(/.*\:\/\/([^:\/]*)[:\/].*/,"$1") );
-
-    let domain = url.replace(/.*\:\/\/([^:\/]*)[:\/].*/, "$1");
-
-    console.debug("DEBUG,capture addDataRow, domain: " + domain);
-
-   // console.debug("DEBUG,capture addDataRow, isExcluded: " + isExcluded(domain));
-    if (!isExcluded(domain)) {
-        try {
-            let installationUniqueId = await chrome.storage.local.get(['installationUniqueId']);
-
-// get lifetime  from system settings
-
-let clickDataLifetimeHours = await chrome.storage.local.get(['clickDataLifetimeHours']);
-
-            const browser_id = installationUniqueId.installationUniqueId;
-
-            const event = new Date();
-
-            const userid = "";
-
-            // suitable redact the URL before saving it
-            const message_body = { 
-                url : redactSensitiveInfo(url),
-                local_time:  local_time,
-                expiration: expiration
-             };
-
-             const message_body2 = { 
-                url : redactSensitiveInfo(url),
-                local_time:  local_time
-             };
-
-
-
-            console.log("DEBUG" + JSON.stringify(message_body));
-            // Fetch data from web service (replace with your actual API endpoint)
-            const response = await fetch(server_url + URI_plugin_user_post_click, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        [plugin_uuid_header_name]: browser_id
-                    },
-                    body: JSON.stringify(message_body) // example IDs, replace as necessary
-                });
-            //console.log(response);
-            // Check for errors
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            // Parse JSON data
-            const data = await response.json();
-
-        } catch (error) {
-            console.error(error);
-        }
-    } else {
-        console.debug("DEBUG,skipping capture of url" + url);
-    }
+        return {  };
 }
+
+
+function addDataRow(url) {
+    console.debug("addDataRow");
+    return new Promise((resolve, reject) => {
+    // get lifetime  from system settings
+
+    var clickDataLifetimeHours; // = await chrome.storage.local.get(['clickDataLifetimeHours']);
+    chrome.storage.local.get(['clickDataLifetimeHours'])
+    .then(function (result) {
+        console.log(result);
+        clickDataLifetimeHours = result.clickDataLifetimeHours;
+console.log(clickDataLifetimeHours);
+    
+
+        // Create a Date object
+        const date = new Date();
+console.log(date);
+    // Convert to ISO 8601 format
+
+
+        const local_time = date.toISOString(); 
+        //console.log();
+
+
+        const expiration = convertTimestamp(date.getTime() + (clickDataLifetimeHours * 60 * 60 * 1000));
+
+        return addDataRow_time(url, local_time, expiration);
+    }).then(data => {
+        console.log(data);
+        resolve(data); // Resolve the Promise with the data
+    }).catch(error => {
+        console.error(error);
+    });
+    
+});
+
+}
+
+function addDataRow_time(url, local_time, expiration) {
+    return new Promise((resolve, reject) => {
+        console.debug("addDataRow_time");
+
+        let domain = url.replace(/.*\:\/\/([^:\/]*)[:\/].*/, "$1");
+        console.debug("DEBUG, capture addDataRow, domain: " + domain);
+
+        if (!isExcluded(domain)) {
+            chrome.storage.local.get(['installationUniqueId'])
+                .then(installationUniqueId => {
+                    console.log(installationUniqueId);
+                    const browser_id = installationUniqueId.installationUniqueId;
+                    const event = new Date();
+                    const userid = "";
+
+                    const message_body = {
+                        url: redactSensitiveInfo(url),
+                        local_time: local_time,
+                        expiration: expiration
+                    };
+
+                    console.log("DEBUG" + JSON.stringify(message_body));
+
+                    return fetch(server_url + URI_plugin_user_post_click, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [plugin_uuid_header_name]: browser_id
+                        },
+                        body: JSON.stringify(message_body)
+                    });
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    resolve(data); // Resolve the Promise with the data
+                })
+                .catch(error => {
+                    console.error(error);
+                    reject(error); // Reject the Promise on error
+                });
+        } else {
+            console.debug("DEBUG,skipping capture of url" + url);
+            resolve(null); // Resolve with null if url is excluded
+        }
+    });
+}
+
+
 
 function convertTimestamp(milliseconds) {
     // Create a new Date object from the milliseconds
@@ -2145,7 +2240,6 @@ function filterKeysFromArray(jsonArray, whitelist) {
         return filteredItem;
     });
 }
-
 
 function convertTimestampToISO(timestamp) {
     // Round the timestamp to remove fractional milliseconds

@@ -40,6 +40,54 @@ async function deleteDataRow(uuid) {
   }
 }
 
+
+
+
+      // Populate the select element of the dropdwon list for number of days to keep click data active, with options for days 1 through 31'
+      // check for the current value of  chrome.storage.local.get(['clickDataLifetimeHours']) to determine which option to pre-select
+      // Note: The value in clickDataLifetimeHours is for hours and must be divided by 24 accordingly. 
+
+    //  chrome.storage.local.get(['clickDataLifetimeHours']),then(function (result) {
+    //    console.log('click data lifetime value currently is ' + result.clickDataLifetimeHours + " days");
+    //  });
+ chrome.storage.local.get(['clickDataLifetimeHours']).then(function (result) {
+        console.log('click data lifetime value currently is ' + result.clickDataLifetimeHours + " days");
+        console.log('click data lifetime value currently is ' + result.clickDataLifetimeHours + " hours or " + Math.round(result.clickDataLifetimeHours/24) + " days");
+
+        
+
+      const daySelect = document.getElementById('daySelect');
+      for (let i = 1; i <= 31; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `${i} day${i > 1 ? 's' : ''}`;
+        // Check if the current value is equal to the already set value, if so, set it as selected
+    if (i === Math.round(result.clickDataLifetimeHours/24) ) {
+        option.selected = true;
+    }
+        daySelect.appendChild(option);
+      }
+
+      return result.clickDataLifetimeHours;
+    });
+
+      // Add click event listener to the "update lifetime of clickdata" drop-down
+      daySelect.addEventListener('change', function(event) {
+        // Call your function here
+        // 'this' refers to the select element
+        // 'this.value' will give you the selected value
+        handleDaySelection(this.value);
+  // Send the selected value to the background page
+  chrome.runtime.sendMessage({ type: "set_click_data_expiration_period", selectedDayCount: parseInt(this.value) }, (response) => {});
+
+    });
+    
+    function handleDaySelection(selectedDay) {
+        console.log(`Selected day: ${selectedDay}`);
+        // Add your logic here that should run when a new day is selected
+    }
+    
+
 // Function to fetch data and populate the table
 async function fetchData() {
   console.log("fetchData");
@@ -375,6 +423,26 @@ document
   .getElementById("clickHistoryRefreshButton")
   .addEventListener("click", fetchData);
 
-document
-  .getElementById("clickDeleteAllButton")
-  .addEventListener("click", deleteAll);
+document.getElementById('clickHistoryDeleteAllButton').addEventListener('click', function() {
+    // Send a message to the service worker to perform the backup
+  
+    chrome.runtime.sendMessage({
+      type: 'deleteAllClickData'
+      
+    }, response => {
+        console.log(response);
+      });
+  });
+
+
+document.getElementById('clickHistoryDeleteExpiredButton').addEventListener('click', function() {
+    // Send a message to the service worker to perform the backup
+  
+    chrome.runtime.sendMessage({
+      type: 'deleteExpiredClickData'
+      
+    }, response => {
+        console.log(response);
+      });
+  });
+
