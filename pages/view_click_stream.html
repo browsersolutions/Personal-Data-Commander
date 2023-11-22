@@ -2,24 +2,24 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="view_click_stream.css">
-    <link rel="stylesheet" href="common.css">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>click history</title>
-    
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="view_click_stream.css">
+  <link rel="stylesheet" href="common.css">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>click history</title>
+
 </head>
 
 <body>
   <div class="wrapper">
     <div class="container-fluid">
-      <div class="headerWrap">        
+      <div class="headerWrap">
         <span class="logoBox"></span>
         <ul class="loginList d-none">
-            <li><a href="#">Community</a></li>
-            <li><a href="#">Login In</a></li>
-            <li><a href="#">Sign Up</a></li>
+          <li><a href="#">Community</a></li>
+          <li><a href="#">Login In</a></li>
+          <li><a href="#">Sign Up</a></li>
         </ul>
         <ul class="userList">
           <li><a href="signup.html" class="profileBox"><img src="../icons/userIcon.png"></a></li>
@@ -27,7 +27,7 @@
       </div>
       <!-- start of page header -->
       <!-- side bar -->
-      <aside class="sidebarWrap" >
+      <aside class="sidebarWrap">
         <div class="sidebarBox">
           <span class="sidebar-collapser"></span>
           <ul class="sidebarMenuList">
@@ -111,13 +111,13 @@
       <div class="container">
         <div class="searchWrap">
           <input type="text" class="inputField" id="filterContent" placeholder="Filter Content" ">
-          <span class="searchIcon"></span>
+          <span class=" searchIcon"></span>
         </div>
         <div class="d-flex justify-content-end">
           <button id="clickHistoryRefreshButton" class="refreshBtn">Refresh</button>
-          <button id="clickHistoryRefreshButton" class="deleteAllBtn">Delete All</button>
+          <button id="clickDeleteAllButton" class="deleteAllBtn">Delete All</button>
         </div>
-        
+
         <!-- tabs wrapper -->
         <div class="tabsWrap">
           <ul class="navTabs">
@@ -130,18 +130,18 @@
           </ul>
           <div class=" tabContent scrollable-table">
             <div class="tableResponsive">
-            <table id="dataTable">
-              <thead>
-                <tr class="fixed-header">
+              <table id="dataTable">
+                <thead>
+                  <tr class="fixed-header">
                     <th>ID</th>
-                  <!-- <th class="sortableCol" >universaltime</th> -->
-                  <th class="sortableCol" >localtime</th>
-                  <th class="sortableCol" >URL</th>
-                  <th>action</th>
-          
-                </tr>
-                <!-- Add a filter row -->
-                <!-- <tr class="fixed-header">
+                    <!-- <th class="sortableCol" >universaltime</th> -->
+                    <th class="sortableCol">localtime</th>
+                    <th class="sortableCol">URL</th>
+                    <th>action</th>
+
+                  </tr>
+                  <!-- Add a filter row -->
+                  <!-- <tr class="fixed-header">
                   <th class="filterableCol"></th> <!//-- Empty cell --//>
                   <th class="filterableCol">filter:<input type="text" id="filterContent" placeholder="Filter Content" "></th>
                   <th class="filterableCol"><input type="text" id="filterContent" placeholder="Filter Content" "></th>
@@ -149,12 +149,12 @@
                   <th class="filterableCol"></th>
               
                 </tr> -->
-              </thead>
-              <tbody>
-                <!-- Rows will be added here -->
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  <!-- Rows will be added here -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
         <!-- tabs wrapper end -->
@@ -169,16 +169,16 @@
           </tbody>
         </table> -->
 
-      <!-- end of pager header -->
-      <!-- Empty table structure -->
+        <!-- end of pager header -->
+        <!-- Empty table structure -->
 
 
 
       </div>
+    </div>
   </div>
-</div>
-    <script src="./view_click_stream_script.js"></script>
-    <script src="./sidebar.js"></script>
+  <script src="./view_click_stream_script.js"></script>
+  <script src="./sidebar.js"></script>
 </body>
 
 </html>
