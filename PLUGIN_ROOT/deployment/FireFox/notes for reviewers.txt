@@ -1,0 +1,7 @@
+version 1.0.3
+On the add-on admin page: 
+The intial verion of the add-on allows deleting or modifying the URL rewrite rules, but not to add new ones. 
+Using "generate default rules" overwites any changes made to exising rules.
+Rules can be backed up, but not imported. 
+
+

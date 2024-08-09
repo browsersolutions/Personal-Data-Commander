@@ -1,0 +1,114 @@
+
+
+official URL 
+cybotix.no
+
+homepage URL
+https://www.cybotix.no
+
+
+support URL
+https://www.cybotix.no
+
+
+Describe Add-on
+
+name: (manifest: name) Personal Data Commander by Cybotix
+
+Add-on URL  	bar-calls-from-defined-websites-to-outside-domains
+
+Summary: (manifest: description)
+Put your personal data to work
+
+Description/Details for display in Chrome Web Store
+##########################################
+
+
+While surfing the web on mobile devices you pay for the amount of data transmitted to and from your browser. By eliminating calls to advertising and data harvesting networks 
+this extension conserves your precious bandwidth for your own direct use. You can save money on the data package in you mobile phone bill with this extension.
+
+An added bonus is that this data conservation will at the same time also make your browsing faster.
+
+Using cookies for tracking your every move across the internet is somewhat old-fashioned. Now the tracking is embedded into the web links themselves. 
+This extension removes some of the most common tracking tags - to free you from the tight embrace of targeted manipulation by websites. 
+
+This extension is NOT an ad-blocker. No advertising directed by a website to your browser will be altered or supressed in anyway by this extension. 
+There are many excellent adblockers available. This is not one of them. It is a usefull supplement to an ad-blocker, but not a replacement. 
+
+No advertising is presented by this extension. No user or usage data is collected or retained. 
+
+The extension is written in the new Manifest V3 format advanced by Google/Chrome and is therefore future-proof in the near-to-medium term. 
+Likewise it is written without any javascript to safeguard the security and privacy of the user. It contains no code that can be subverted by others.
+
+At present (Nov. 2023) this extension is in early release. Later versions will include a GUI with which the user can directly control (view/add/edit/delete) the rules and policies according to which it operates. 
+
+
+###########
+
+background justification
+Removing tracking tags inserted in URLs to monitor user behaviour must be done before the requests leave the browser to ensure the privacy of the user. 
+
+declarativenetrequest justification
+Removing tracking tags inserted in URLs to monitor user behaviour must be done before the requests leave the browser to ensure the privacy of the user. 
+
+host permission
+Tracking tags are embedded on links hosted across all domains and the host permission is required to remove query string parameters. 
+
+Purpose
+----------------
+Makes users invisible to Google Analytics
+
+
+Category: Productivity
+
+
+Privacy Policy
+--------------
+
+ http://api.cybotix.no/privacy_policy.html
+
+
+Feedback
+--------
+
+You can report bugs or make feature requests on https://github.com/lars0281/URL-Tracker-Redactor_for_Firefox
+Any request to create additional default url rewriting rules to handle other websites can be directed here. 
+
+
+
+###########################
+
+Additional Details
+
+Tags: 
+security, link, redirects,trackers, anti-tracking, anti-advertising, 
+
+Default-locale en-US
+
+Homepage (manifest: homepage_url): 
+https://www.cybotix.no
+
+Technical Details
+UUID: (manifest: browser_specific_settings: gecko: id)
+ 	linklooker@glovebox.com 
+
+Whiteboard:
+######################################
+Righ click on link to be presented with a message box with a cleaned-up link
+
+The add-on has an admin page with additional explanation and access to see all rewrite rules. 
+The user is free to add, remove and edit these rules. 
+
+
+Development is currently active. 
+
+
+https://addons.mozilla.org/en-GB/developers/addon/safely-examine-and-clean-links/
+
+###########################################
+
+compare to this
+
+https://addons.mozilla.org/en-GB/firefox/addon/skip-redirect/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=search
+
+

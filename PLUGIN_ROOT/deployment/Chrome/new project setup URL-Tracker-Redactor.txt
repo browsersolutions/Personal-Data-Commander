@@ -1,0 +1,71 @@
+
+
+First, set up SSH2 configurations. In Exclipse. Go to Windows->Preferences->General->Network Connections->SSH2->Key Management->Generate RSA Key. 
+Save this key (click "Save Private Key")
+
+
+Copy that key (the ssh-rsa AAAA.... bit) . You will need to go to your GitHub account settings and add the new SSH key to your account. 
+
+Account Settings -> SSH and GPG Keys
+
+key 
+
+
+
+#login to git
+
+https://github.com/browsersolutions
+
+create new respository "URL-Tracker-Redactor_for_Chrome"
+
+
+copy (ctrl-C) URL git@github.com:lars0281/URL-Tracker-Redactor_for_Firefox.git
+
+git@github.com:browsersolutions/URL-Tracker-Redactor_for_Chrome.git
+
+
+
+
+# add/update ssh keys on github
+
+# add key to github  https://docs.github.com/en/developers/overview/managing-deploy-keys#deploy-keys
+# go to github -> select project -> setting -> deploy key -> add deploy key
+Remeber to check off for "write access"
+
+
+
+
+On eclipse
+window -> show view -> other ->  Git Repositories
+
+in Git Repo window right click and select "paste reposity path or URI"
+
+A partially filled-out form appears.
+
+leave authentication info unchanged (SSH authentication is enabled)
+
+click next 
+
+Give path in filsystem C:\Users\lars_\git\repository_URL-Tracker-Redactor_for_Chrome
+
+
+
+# Create javascript project
+
+'
+# add project to repository
+
+right click on your project and select Team->Share Project -> Git
+
+Select the repository you just created. You can also use CTRL+ to select multiple projects and place them in one repository. 
+
+leave path in working directory blank
+
+# git commands
+
+cd /cygdrive/c/users/lars_/git/repository_URL-Tracker-Redactor_for_Chrome
+
+git remote add origin git@github.com:browsersolutions/URL-Tracker-Redactor_for_Chrome.git
+
+
+

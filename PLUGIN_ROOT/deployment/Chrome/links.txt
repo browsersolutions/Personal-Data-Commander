@@ -1,0 +1,19 @@
+
+https://developer.chrome.com/docs/extensions/reference/declarativeNetRequest/
+
+https://developer.chrome.com/docs/webstore/
+
+https://chrome.google.com/webstore/devconsole
+
+
+# alternat products
+https://chrome.google.com/webstore/detail/url-tracking-stripper-red/flnagcobkfofedknnnmofijmmkbgfamf
+
+
+
+webstore
+https://chrome.google.com/webstore/category/extensions
+
+Evernote Web Clipper
+
+can add extensions from the Chrome stor to Microsoft Edge, and others 

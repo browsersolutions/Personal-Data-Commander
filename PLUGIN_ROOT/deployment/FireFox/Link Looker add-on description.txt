@@ -1,0 +1,84 @@
+
+
+https://addons.mozilla.org/en-GB/developers/addon/cb6d28844ff94b3cbd70/edit
+
+
+
+Describe Add-on
+
+name: (manifest: name) Link Looker
+
+Add-on URL  	safely-examine-and-clean-links
+
+Summary: (manifest: description)
+To clarify obfuscated URLs, to bypass unnessesary redirects and to remove tracking information embedded in link. Made by Glovebox 
+
+Description: 
+##########################################
+User right click a link and selects "reveal the true endpoint of this link". 
+Applies rules to rewrite URLs to remove tracking information. The rules can be freely edited, amended or removed by the user. 
+
+Makes a safe call to the URL (using HTTP HEAD) from outside the session context to avoid session cookies, in order to ascertain whether or not the URL results in a redirect (HTTP 302 or 303). 
+If the call results in a redirect the rewrite rules again and attempts another safe call to find the endpoint. The user is presented with a message box with a cleaned-up link to the genuine endpoint of the link.
+
+Purpose
+----------------
+
+The rewrite rules are set up to remove tracking information inserted into URLs. 
+Sites use this to track the user both from the page where the user clicked the link, and to the page where the user arrived. 
+Tracking the user across the web is a business model where portal-type sites such as social media (such facebook and linkedin ) have an interest in finding out which links on their pages the user clicked on and charge the advertiser accordingly; and content sites/advertisers have an interest in finding out which site the user came from in order to direct more advertising spending there. 
+
+This add-on seeks to interfere with that model as much as possible by removing this information. Using Link Looker allows you the option of clicking on a link on facebook and Linkedin without telling them – thereby denying them advertising revenue. 
+
+Likewise to get directly to pages advertised on Facebook and Linkedin without letting them know where you came from – thereby reducing their incentive to advertise with Facebook or Linkedin. 
+
+
+Privacy Policy
+--------------
+
+This extension does not collect or send data of any kind to third parties.
+
+Feedback
+--------
+
+You can report bugs or make feature requests on https://github.com/lars0281/glovebox_linkstraingthener
+Any request to create additional default url rewriting rules to handle other websites can be directed here. 
+
+
+
+###########################
+
+Additional Details
+
+Tags: 
+security, link, redirects,trackers, anti-tracking, anti-advertising, anti-spyware
+
+Default-locale en-US
+
+Homepage (manifest: homepage_url): 
+https://github.com/lars0281/glovebox_linkstraingthener
+
+Technical Details
+UUID: (manifest: browser_specific_settings: gecko: id)
+ 	linklooker@glovebox.com 
+
+Whiteboard:
+######################################
+Righ click on link to be presented with a message box with a cleaned-up link
+
+The add-on has an admin page with additional explanation and access to see all rewrite rules. 
+The user is free to add, remove and edit these rules. 
+
+
+Development is currently active. 
+
+
+https://addons.mozilla.org/en-GB/developers/addon/safely-examine-and-clean-links/
+
+###########################################
+
+compare to this
+
+https://addons.mozilla.org/en-GB/firefox/addon/skip-redirect/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=search
+
+

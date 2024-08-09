@@ -1,0 +1,41 @@
+{
+  "manifest_version": 2,
+  "name": "LinkLooker",
+  "description": "To clarify obfuscated URLs, to bypass unnessesary redirects and to supress or avoid tracking cookies. Made by Glovebox",
+  "version": "0.5.0",
+  "icons": {
+    "64": "icons/icon.png"
+  },
+  "background": {
+    "scripts": [
+      "background_script.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.mozilla.org/*"
+      ],
+      "js": [
+        "content_script.js"
+      ]
+    }
+  ],
+  "browser_action": {
+    "default_icon": {
+      "64": "icons/icon.png"
+    },
+    "default_popup": "browserAction/index.html",
+    "default_title": "LinkLooker"
+  },
+  "page_action": {
+    "default_icon": {
+      "64": "icons/icon.png"
+    },
+    "default_popup": "pageAction/index.html",
+    "default_title": "LinkLooker"
+  },
+  "options_ui": {
+    "page": "options/index.html"
+  }
+}

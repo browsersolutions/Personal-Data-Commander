@@ -1,0 +1,73 @@
+
+
+First, set up SSH2 configurations. Go to Windows->Preferences->General->Network Connections->SSH2->Key Management and Generate RSA Key. Save Key
+
+Copy that key. You will need to go to your GitHub account settings and add the new SSH key to your account. 
+
+Account Settings -> SSH and GPG Keys
+
+
+1) 
+login to git and create repository Glovebox_LinkLooker
+
+copy (into buffer) url found on githib
+git@github.com:lars0281/Glovebox_LinkLooker.git
+
+
+2)
+
+
+
+
+On eclipse
+window -> show view -> other ->  Git Repositories
+
+in Git Repo window righ click and select
+"Paste a repository path urURI"
+
+All fields requireing value should now be completed.
+Repository path should look something like "lars0281/Glovebox_LinkLooker.git"
+
+SSH authentication is setup already so leave authentication info unchanged
+
+Click next
+a local directory is crated. prefix the name used in git with "repository_" ( rename to repositiry_Glovebox_LinkLooker )
+
+
+3)  add project to repository
+
+right click on your project and select Team->Share Project -> git
+
+Select the repository you just created. You can also use CTRL+ to select multiple projects and place them in one repository. 
+
+leave path in working directory blank
+
+
+
+
+ow go back to your Git Repositories view. Go to Remotes . Right click and select Create Remote. 
+
+select "Configure Push"
+
+Select Change... and enter the SSH link for your Repository on GitHub. 
+
+To get this link to to repo specific front page on git hub, select "code" and Close,  see ssh link
+and looks something like 
+git@github.com:lars0281/glovebox_linkstraingthener.git
+
+
+
+
+
+
+
+
+
+git url: git://git@github.com/lars0281/glovebox_linkstraingthener.git
+
+sample github repo for firefox plugin
+
+https://github.com/danny0838/webscrapbook
+
+used this
+https://stackoverflow.com/questions/21473308/integrating-eclipse-and-github

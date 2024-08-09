@@ -1,0 +1,35 @@
+
+
+zip of the files
+
+Enter root directory
+cd Personal-Data-Commander
+
+zip -r cybotix-personal-data-commander.zip . -x deployment/\* .git/\* SECURITY.md .gitignore .gitattributes
+unzip -l cybotix-personal-data-commander.zip
+
+
+link for Chrom add-on development
+
+
+
+for icon development
+https://www.online-image-editor.com/
+
+
+path to local plugin when installed in the browser
+
+
+https://chrome.google.com/webstore/detail/video-downloader-unlimite/mkjjckchdfhjbpckippbnipkdnlidbeb
+
+manifest V3
+https://developer.chrome.com/docs/extensions/mv3/intro/mv3-migration/
+
+icons
+https://developer.chrome.com/docs/webstore/images/#icons
+
+
+images for webstore
+    Small: 440x280 pixels (required)
+    Large: 920x680 pixels
+    Marquee: 1400x560 pixels
